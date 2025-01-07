@@ -1,0 +1,13 @@
+{
+    "type": "code",
+    "modid": "Verticality",
+    "name": "Verticality",
+    "authors": [
+        "Unknown"
+    ],
+    "description": "To be added",
+    "version": "1.0.0",
+    "dependencies": {
+        "game": ""
+    }
+}

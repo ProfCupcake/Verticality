@@ -1,0 +1,11 @@
+[
+  {
+    "op": "add",
+    "path": "/client/behaviors/1",
+    "value": {
+      "code": "climb"
+    },
+    "file": "game:entities/humanoid/player.json",
+    "side": "Server"
+  }
+]
