@@ -25,16 +25,6 @@ namespace Verticality
             this.capi = capi;
 
             capi.Input.RegisterHotKey("climb", "Climb", GlKeys.LShift, HotkeyType.MovementControls);
-            capi.Input.SetHotKeyHandler("climb", OnKeyClimb);
-
-        }
-        private bool OnKeyClimb(KeyCombination combination)
-        {
-            EntityBehaviorClimb climbB = capi.World.Player.Entity.GetBehavior<EntityBehaviorClimb>();
-
-            climbB.OnKeyClimb();
-
-            return true;
         }
     }
 }

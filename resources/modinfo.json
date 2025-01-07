@@ -3,10 +3,10 @@
     "modid": "Verticality",
     "name": "Verticality",
     "authors": [
-        "Unknown"
+        "Professor Cupcake"
     ],
-    "description": "To be added",
-    "version": "1.0.0",
+    "description": "Climbing!",
+  "version": "0.0.0",
     "dependencies": {
         "game": ""
     }
