@@ -48,19 +48,16 @@ namespace Verticality
                     if (grab.CanStillGrab())
                     {
                         player.Properties.CanClimbAnywhere = true;
-                        //player.StartAnimation("climbup");
                     } else
                     {
-                        player.Properties.CanClimbAnywhere = false;
-                        grab = null;
-                        //player.StopAnimation("climbup");
+                        grab = Grab.TryGrab(player);
+                        if (grab == null) player.Properties.CanClimbAnywhere = false;
                     }
                 }
             } else if (grab != null)
             {
                 player.Properties.CanClimbAnywhere = false;
                 grab = null;
-                //player.StopAnimation("climbup");
             }
         }
     }
