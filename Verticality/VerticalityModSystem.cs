@@ -15,6 +15,8 @@ namespace Verticality
         {
             base.Start(api);
 
+            ConfigManager.api = api;
+
             api.RegisterEntityBehaviorClass("climb", typeof(EntityBehaviorClimb));
         }
 
