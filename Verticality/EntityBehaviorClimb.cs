@@ -34,10 +34,6 @@ namespace Verticality
             return "climb";
         }
 
-        public void OnKeyClimb()
-        {
-            
-        }
         public override void OnGameTick(float deltaTime)
         {
             base.OnGameTick(deltaTime);
@@ -133,8 +129,10 @@ namespace Verticality
             float yaw = entity.BodyYaw - GameMath.PIHALF;
 
             List<BlockPos> posList = new List<BlockPos>();
-
+            
+            /*
             debugParticles.Color = ColorUtil.ColorFromRgba(255, 0, 0, 255);
+            //*/
 
             for (int y_offset = 0; y_offset <= 2; y_offset++)
             {
@@ -145,8 +143,10 @@ namespace Verticality
                     BlockPos newPos = entity.Pos.XYZ.AddCopy(x_offset, min + y_offset, z_offset).AsBlockPos;
                     posList.Add(newPos);
 
+                    /*
                     debugParticles.MinPos = newPos.ToVec3d().AddCopy(0.5,0.5,0.5);
                     entity.World.SpawnParticles(debugParticles);
+                    //*/
                 }
             }
 
@@ -179,6 +179,7 @@ namespace Verticality
 
             Vec3d topPos = ToTheTop(collBoxes, collPos);
 
+            /*
             if (collPos.DistanceTo(entity.Pos.XYZ) < 2)
             {
                 debugParticles.MinPos = collPos;
@@ -200,7 +201,7 @@ namespace Verticality
                     debugParticles.Color = ColorUtil.ColorFromRgba(0, 0, 255, 255);
                 }
                 entity.World.SpawnParticles(debugParticles);
-            }
+            } //*/
 
             return topPos;
         }
