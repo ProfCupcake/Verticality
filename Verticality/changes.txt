@@ -1,4 +1,3 @@
-TODO THIS UPDATE:
-- charged jump
-- stop climbing when player sneaking
-- server -> client config (or possibly just remove the config settings entirely - seems superfluous?)
+- removed the config file entirely
+- maximum height is now calculated from player's eye height, rather than feet height
+- added a charged jump

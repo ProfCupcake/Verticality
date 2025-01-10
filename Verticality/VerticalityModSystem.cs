@@ -12,6 +12,7 @@ namespace Verticality
             base.Start(api);
 
             api.RegisterEntityBehaviorClass("climb", typeof(EntityBehaviorClimb));
+            api.RegisterEntityBehaviorClass("chargedjump", typeof(EntityBehaviorChargedJump));
         }
 
         public override void StartClientSide(ICoreClientAPI capi)
