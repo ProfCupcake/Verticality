@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 
-namespace Verticality
+namespace Verticality.Lib
 {
     internal class CollisionUtils
     {
@@ -15,7 +10,7 @@ namespace Verticality
         // Returns closest point within box to given position
         public static Vec3d GetClosestPoint(Cuboidf coll, Vec3d pos)
         {
-            return new Vec3d( 
+            return new Vec3d(
                 Math.Clamp(pos.X, coll.X1, coll.X2),
                 Math.Clamp(pos.Y, coll.Y1, coll.Y2),
                 Math.Clamp(pos.Z, coll.Z1, coll.Z2)
@@ -42,7 +37,7 @@ namespace Verticality
         }
         public static Vec3d GetClosestPoint(Cuboidf[] colls, Vec3d pos)
         {
-            return GetClosestPoint(colls, pos, out int index);
+            return GetClosestPoint(colls, pos, out _);
         }
 
         // Check if given point collides with any box in given array
@@ -64,7 +59,7 @@ namespace Verticality
             int curColl = CollisionArrayContains(colls, pos);
             if (curColl == -1) return pos;
 
-            Vec3d outPos = new Vec3d(pos.X, pos.Y, pos.Z);
+            Vec3d outPos = new(pos.X, pos.Y, pos.Z);
             while (curColl != -1)
             {
                 outPos.Set(outPos.X, colls[curColl].MaxY, outPos.Z);

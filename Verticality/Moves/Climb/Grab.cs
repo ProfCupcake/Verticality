@@ -1,74 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Util;
-using Vintagestory.Common;
-using Vintagestory.Server;
-using static Verticality.CollisionUtils;
+using static Verticality.Lib.CollisionUtils;
 
-namespace Verticality
+namespace Verticality.Moves.Climb
 {
-    internal class EntityBehaviorClimb : EntityBehavior
-    {
-        private Grab grab;
-
-        private bool climbKeyDown;
-
-        public EntityBehaviorClimb(Entity entity) : base(entity)
-        {
-            climbKeyDown = false;
-        }
-
-        public override string PropertyName()
-        {
-            return "climb";
-        }
-
-        public override void OnGameTick(float deltaTime)
-        {
-            base.OnGameTick(deltaTime);
-
-            EntityPlayer player = (EntityPlayer)entity;
-            // pseudocode scaffold go
-            if (((ICoreClientAPI)entity.Api).Input.IsHotKeyPressed("climb"))
-            {
-                if (grab == null)
-                {
-                    grab = Grab.TryGrab(player);
-                } else
-                {
-                    if (grab.CanStillGrab())
-                    {
-                        player.Properties.CanClimbAnywhere = true;
-                    } else
-                    {
-                        grab = Grab.TryGrab(player);
-                        if (grab == null) player.Properties.CanClimbAnywhere = false;
-                    }
-                }
-            } else if (grab != null)
-            {
-                player.Properties.CanClimbAnywhere = false;
-                grab = null;
-            }
-        }
-    }
-
     internal class Grab
     {
-        private EntityPlayer player;
+        static float minHeight => EntityBehaviorClimb.minHeight;
+        static float maxHeight => EntityBehaviorClimb.maxHeight;
+        static float grabDistance => EntityBehaviorClimb.grabDistance;
 
-        private BlockPos grabbedBlockPos;
+        private EntityPlayer player;
 
         private Vec3d preciseGrabPos;
 
@@ -77,9 +21,10 @@ namespace Verticality
         {
             Vec3d grabLoc = GetGrabLocation(entity);
 
-            double relHeight = grabLoc.Y - entity.Pos.Y;
+            double relHeightFeet = grabLoc.Y - entity.Pos.Y;
+            double relHeightEyes = relHeightFeet - entity.LocalEyePos.Y;
 
-            if (relHeight > ConfigManager.modConfig.minHeight && relHeight < ConfigManager.modConfig.maxHeight)
+            if (relHeightFeet > minHeight && relHeightEyes < maxHeight)
             {
                 return new Grab()
                 {
@@ -94,15 +39,16 @@ namespace Verticality
         // Checks and returns whether player should still be holding onto this grab point
         public bool CanStillGrab()
         {
-            double relHeight = preciseGrabPos.Y - player.Pos.Y;
+            double relHeightFeet = preciseGrabPos.Y - player.Pos.Y;
+            double relHeightEyes = relHeightFeet - player.LocalEyePos.Y;
 
-            if (relHeight >= 0 && relHeight < ConfigManager.modConfig.maxHeight)
-                return player.Pos.HorDistanceTo(preciseGrabPos) <= ConfigManager.modConfig.climbDistance;
+            if (relHeightFeet >= 0 && relHeightEyes < maxHeight)
+                return player.Pos.HorDistanceTo(preciseGrabPos) <= grabDistance;
 
             return false;
         }
 
-        public static SimpleParticleProperties debugParticles = new SimpleParticleProperties()
+        public static SimpleParticleProperties debugParticles = new()
         {
             MinSize = 0.2f,
             MaxSize = 0.2f,
@@ -122,14 +68,10 @@ namespace Verticality
         // return location of gap, if any
         public static Vec3d GetGrabLocation(EntityPlayer entity)
         {
-            float min = ConfigManager.modConfig.minHeight;
-            float max = ConfigManager.modConfig.maxHeight;
-            float dist = ConfigManager.modConfig.climbDistance;
-
             float yaw = entity.BodyYaw - GameMath.PIHALF;
 
-            List<BlockPos> posList = new List<BlockPos>();
-            
+            List<BlockPos> posList = new();
+
             /*
             debugParticles.Color = ColorUtil.ColorFromRgba(255, 0, 0, 255);
             //*/
@@ -140,7 +82,7 @@ namespace Verticality
                 {
                     float x_offset = MathF.Cos(yaw + yaw_offset);
                     float z_offset = -MathF.Sin(yaw + yaw_offset);
-                    BlockPos newPos = entity.Pos.XYZ.AddCopy(x_offset, min + y_offset, z_offset).AsBlockPos;
+                    BlockPos newPos = entity.Pos.XYZ.AddCopy(x_offset, minHeight + y_offset, z_offset).AsBlockPos;
                     posList.Add(newPos);
 
                     /*
@@ -175,7 +117,7 @@ namespace Verticality
             }
 
 
-            Vec3d collPos = GetClosestPoint(collBoxes, entity.Pos.XYZ.AddCopy(0,min,0));
+            Vec3d collPos = GetClosestPoint(collBoxes, entity.Pos.XYZ.AddCopy(0, minHeight, 0));
 
             Vec3d topPos = ToTheTop(collBoxes, collPos);
 

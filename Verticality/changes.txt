@@ -1,0 +1,4 @@
+- removed the config file entirely
+- maximum height is now calculated from player's eye height, rather than feet height
+- new move: charged jump
+- default climb key changed to CTRL
