@@ -21,7 +21,7 @@ namespace Verticality
     internal class EntityBehaviorClimb : EntityBehavior
     {
         public const float minHeight = 0.5f; // minimum height from player's feet
-        public const float maxHeight = 0.5f; // maximum height from player's LocalEyePos
+        public const float maxHeight = 0.7f; // maximum height from player's LocalEyePos
         public const float grabDistance = 0.5f; // maximum distance to grab point
 
         private Grab grab;
@@ -91,7 +91,7 @@ namespace Verticality
             Vec3d grabLoc = GetGrabLocation(entity);
 
             double relHeightFeet = grabLoc.Y - entity.Pos.Y;
-            double relHeightEyes = grabLoc.Y - entity.LocalEyePos.Y;
+            double relHeightEyes = relHeightFeet - entity.LocalEyePos.Y;
 
             if (relHeightFeet > minHeight && relHeightEyes < maxHeight)
             {
@@ -109,7 +109,7 @@ namespace Verticality
         public bool CanStillGrab()
         {
             double relHeightFeet = preciseGrabPos.Y - player.Pos.Y;
-            double relHeightEyes = preciseGrabPos.Y - player.LocalEyePos.Y;
+            double relHeightEyes = relHeightFeet - player.LocalEyePos.Y;
 
             if (relHeightFeet >= 0 && relHeightEyes < maxHeight)
                 return player.Pos.HorDistanceTo(preciseGrabPos) <= grabDistance;
@@ -137,10 +137,6 @@ namespace Verticality
         // return location of gap, if any
         public static Vec3d GetGrabLocation(EntityPlayer entity)
         {
-            float min = minHeight;
-            float max = maxHeight;
-            float dist = grabDistance;
-
             float yaw = entity.BodyYaw - GameMath.PIHALF;
 
             List<BlockPos> posList = new List<BlockPos>();
@@ -155,7 +151,7 @@ namespace Verticality
                 {
                     float x_offset = MathF.Cos(yaw + yaw_offset);
                     float z_offset = -MathF.Sin(yaw + yaw_offset);
-                    BlockPos newPos = entity.Pos.XYZ.AddCopy(x_offset, min + y_offset, z_offset).AsBlockPos;
+                    BlockPos newPos = entity.Pos.XYZ.AddCopy(x_offset, minHeight + y_offset, z_offset).AsBlockPos;
                     posList.Add(newPos);
 
                     /*
@@ -190,7 +186,7 @@ namespace Verticality
             }
 
 
-            Vec3d collPos = GetClosestPoint(collBoxes, entity.Pos.XYZ.AddCopy(0,min,0));
+            Vec3d collPos = GetClosestPoint(collBoxes, entity.Pos.XYZ.AddCopy(0,minHeight,0));
 
             Vec3d topPos = ToTheTop(collBoxes, collPos);
 
