@@ -12,7 +12,7 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-namespace Verticality
+namespace Verticality.Moves.ChargedJump
 {
     internal class EntityBehaviorChargedJump : EntityBehavior
     {
@@ -24,11 +24,11 @@ namespace Verticality
             get
             {
                 // Vintagestory.API.Common.Entities.PModuleOnGround
-                return ((GlobalConstants.BaseJumpForce + jumpForceAdd) * MathF.Sqrt(MathF.Max(1f, entity.Stats.GetBlended("jumpHeightMul"))))/60f;
+                return (GlobalConstants.BaseJumpForce + jumpForceAdd) * MathF.Sqrt(MathF.Max(1f, entity.Stats.GetBlended("jumpHeightMul"))) / 60f;
             }
         }
         float t;
-        public EntityBehaviorChargedJump(Entity entity) : base(entity) {}
+        public EntityBehaviorChargedJump(Entity entity) : base(entity) { }
 
         public override string PropertyName()
         {
@@ -52,7 +52,7 @@ namespace Verticality
         public override void OnGameTick(float dt)
         {
             base.OnGameTick(dt);
-            
+
             if (entity.Api.Side != EnumAppSide.Client) return;
 
             EntityPlayer player = (EntityPlayer)entity;

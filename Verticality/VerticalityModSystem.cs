@@ -1,4 +1,6 @@
 ﻿using System;
+using Verticality.Moves.ChargedJump;
+using Verticality.Moves.Climb;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;

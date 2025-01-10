@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 
-namespace Verticality
+namespace Verticality.Lib
 {
     internal class CollisionUtils
     {
@@ -15,7 +15,7 @@ namespace Verticality
         // Returns closest point within box to given position
         public static Vec3d GetClosestPoint(Cuboidf coll, Vec3d pos)
         {
-            return new Vec3d( 
+            return new Vec3d(
                 Math.Clamp(pos.X, coll.X1, coll.X2),
                 Math.Clamp(pos.Y, coll.Y1, coll.Y2),
                 Math.Clamp(pos.Z, coll.Z1, coll.Z2)
