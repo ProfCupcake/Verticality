@@ -14,8 +14,6 @@ namespace Verticality.Moves.Climb
 
         private EntityPlayer player;
 
-        private BlockPos grabbedBlockPos;
-
         private Vec3d preciseGrabPos;
 
         // Checks if given player can grab, then either returns the successful Grab or null if not successful
@@ -50,7 +48,7 @@ namespace Verticality.Moves.Climb
             return false;
         }
 
-        public static SimpleParticleProperties debugParticles = new SimpleParticleProperties()
+        public static SimpleParticleProperties debugParticles = new()
         {
             MinSize = 0.2f,
             MaxSize = 0.2f,
@@ -72,7 +70,7 @@ namespace Verticality.Moves.Climb
         {
             float yaw = entity.BodyYaw - GameMath.PIHALF;
 
-            List<BlockPos> posList = new List<BlockPos>();
+            List<BlockPos> posList = new();
 
             /*
             debugParticles.Color = ColorUtil.ColorFromRgba(255, 0, 0, 255);

@@ -1,22 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Server;
-using Vintagestory.GameContent;
 
 namespace Verticality.Moves.ChargedJump
 {
     internal class EntityBehaviorChargedJump : EntityBehavior
     {
-        private static float jumpForceAdd = 1.7f;
+        private const float jumpForceAdd = 1.7f;
         private const float jumpChargeTime = 1.5f;
 
         private float jumpForce
@@ -33,20 +26,6 @@ namespace Verticality.Moves.ChargedJump
         public override string PropertyName()
         {
             return "chargedjump";
-        }
-
-        private TextCommandResult SetJumpForce(TextCommandCallingArgs args)
-        {
-            if ((float)args[0] < 0f)
-            {
-                ((IClientPlayer)args.Caller.Player).ShowChatNotification("Current jumpForceAdd: " + jumpForceAdd);
-            }
-            else
-            {
-                jumpForceAdd = (float)args[0];
-            }
-
-            return TextCommandResult.Success();
         }
 
         public override void OnGameTick(float dt)

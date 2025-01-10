@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 
 namespace Verticality.Lib
@@ -42,7 +37,7 @@ namespace Verticality.Lib
         }
         public static Vec3d GetClosestPoint(Cuboidf[] colls, Vec3d pos)
         {
-            return GetClosestPoint(colls, pos, out int index);
+            return GetClosestPoint(colls, pos, out _);
         }
 
         // Check if given point collides with any box in given array
@@ -64,7 +59,7 @@ namespace Verticality.Lib
             int curColl = CollisionArrayContains(colls, pos);
             if (curColl == -1) return pos;
 
-            Vec3d outPos = new Vec3d(pos.X, pos.Y, pos.Z);
+            Vec3d outPos = new(pos.X, pos.Y, pos.Z);
             while (curColl != -1)
             {
                 outPos.Set(outPos.X, colls[curColl].MaxY, outPos.Z);

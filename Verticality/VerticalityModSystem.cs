@@ -1,9 +1,7 @@
-﻿using System;
-using Verticality.Moves.ChargedJump;
+﻿using Verticality.Moves.ChargedJump;
 using Verticality.Moves.Climb;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Server;
 
 namespace Verticality
 {
@@ -21,7 +19,7 @@ namespace Verticality
         {
             base.StartClientSide(capi);
 
-            capi.Input.RegisterHotKey("climb", "Climb", GlKeys.LShift, HotkeyType.MovementControls);
+            capi.Input.RegisterHotKey("climb", "Climb", GlKeys.LAlt, HotkeyType.MovementControls);
         }
     }
 }
