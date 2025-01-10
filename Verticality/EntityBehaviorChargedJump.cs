@@ -16,7 +16,7 @@ namespace Verticality
 {
     internal class EntityBehaviorChargedJump : EntityBehavior
     {
-        private static float jumpForceAdd = 1.6f;
+        private static float jumpForceAdd = 1.7f;
         private const float jumpChargeTime = 1.5f;
 
         private float jumpForce
@@ -33,22 +33,6 @@ namespace Verticality
         public override string PropertyName()
         {
             return "chargedjump";
-        }
-
-        public override void AfterInitialized(bool onFirstSpawn)
-        {
-            base.AfterInitialized(onFirstSpawn);
-
-            if (entity.World.Side == EnumAppSide.Client)
-            {
-                ICoreClientAPI capi = ((ICoreClientAPI)entity.Api);
-                capi.ChatCommands.Create("jumpforce")
-                .WithDescription("Changes additional charged jump force")
-                .RequiresPlayer()
-                .RequiresPrivilege(Privilege.root)
-                .WithArgs(new ICommandArgumentParser[] { capi.ChatCommands.Parsers.OptionalFloat("force", -1f) })
-                .HandleWith(SetJumpForce);
-            }
         }
 
         private TextCommandResult SetJumpForce(TextCommandCallingArgs args)
