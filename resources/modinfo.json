@@ -6,7 +6,7 @@
         "Professor Cupcake"
     ],
     "description": "Climbing!",
-  "version": "0.0.1",
+  "version": "0.0.2",
     "dependencies": {
         "game": "1.20.0-rc.8"
     }

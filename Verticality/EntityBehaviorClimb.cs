@@ -20,14 +20,21 @@ namespace Verticality
 {
     internal class EntityBehaviorClimb : EntityBehavior
     {
+        public const float minHeight = 0.5f; // minimum height from player's feet
+        public const float maxHeight = 0.5f; // maximum height from player's LocalEyePos
+        public const float grabDistance = 0.5f; // maximum distance to grab point
+
         private Grab grab;
 
-        private bool climbKeyDown;
-
-        public EntityBehaviorClimb(Entity entity) : base(entity)
+        public bool ClimbKeyDown
         {
-            climbKeyDown = false;
+            get
+            {
+                return ((ICoreClientAPI)entity.Api).Input.IsHotKeyPressed("climb");
+            }
         }
+
+        public EntityBehaviorClimb(Entity entity) : base(entity) {}
 
         public override string PropertyName()
         {
@@ -38,9 +45,11 @@ namespace Verticality
         {
             base.OnGameTick(deltaTime);
 
+            if (entity.World.Side != EnumAppSide.Client) return;
+
             EntityPlayer player = (EntityPlayer)entity;
-            // pseudocode scaffold go
-            if (((ICoreClientAPI)entity.Api).Input.IsHotKeyPressed("climb"))
+
+            if (ClimbKeyDown)
             {
                 if (grab == null)
                 {
@@ -66,6 +75,10 @@ namespace Verticality
 
     internal class Grab
     {
+        static float minHeight => EntityBehaviorClimb.minHeight;
+        static float maxHeight => EntityBehaviorClimb.maxHeight;
+        static float grabDistance => EntityBehaviorClimb.grabDistance;
+
         private EntityPlayer player;
 
         private BlockPos grabbedBlockPos;
@@ -77,9 +90,10 @@ namespace Verticality
         {
             Vec3d grabLoc = GetGrabLocation(entity);
 
-            double relHeight = grabLoc.Y - entity.Pos.Y;
+            double relHeightFeet = grabLoc.Y - entity.Pos.Y;
+            double relHeightEyes = grabLoc.Y - entity.LocalEyePos.Y;
 
-            if (relHeight > ConfigManager.modConfig.minHeight && relHeight < ConfigManager.modConfig.maxHeight)
+            if (relHeightFeet > minHeight && relHeightEyes < maxHeight)
             {
                 return new Grab()
                 {
@@ -94,10 +108,11 @@ namespace Verticality
         // Checks and returns whether player should still be holding onto this grab point
         public bool CanStillGrab()
         {
-            double relHeight = preciseGrabPos.Y - player.Pos.Y;
+            double relHeightFeet = preciseGrabPos.Y - player.Pos.Y;
+            double relHeightEyes = preciseGrabPos.Y - player.LocalEyePos.Y;
 
-            if (relHeight >= 0 && relHeight < ConfigManager.modConfig.maxHeight)
-                return player.Pos.HorDistanceTo(preciseGrabPos) <= ConfigManager.modConfig.climbDistance;
+            if (relHeightFeet >= 0 && relHeightEyes < maxHeight)
+                return player.Pos.HorDistanceTo(preciseGrabPos) <= grabDistance;
 
             return false;
         }
@@ -122,9 +137,9 @@ namespace Verticality
         // return location of gap, if any
         public static Vec3d GetGrabLocation(EntityPlayer entity)
         {
-            float min = ConfigManager.modConfig.minHeight;
-            float max = ConfigManager.modConfig.maxHeight;
-            float dist = ConfigManager.modConfig.climbDistance;
+            float min = minHeight;
+            float max = maxHeight;
+            float dist = grabDistance;
 
             float yaw = entity.BodyYaw - GameMath.PIHALF;
 

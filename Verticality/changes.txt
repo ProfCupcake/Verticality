@@ -1,0 +1,4 @@
+TODO THIS UPDATE:
+- charged jump
+- stop climbing when player sneaking
+- server -> client config (or possibly just remove the config settings entirely - seems superfluous?)
