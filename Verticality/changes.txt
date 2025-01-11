@@ -1,4 +1,3 @@
-- removed the config file entirely
-- maximum height is now calculated from player's eye height, rather than feet height
-- new move: charged jump
-- default climb key changed to CTRL
+- reintroduced config file, plus added sync of config from server to client
+- slightly increased charged jump force
+- reduced charged jump charge time to half a second
