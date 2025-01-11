@@ -1,4 +1,5 @@
 ﻿using System;
+using Verticality.Lib;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -9,8 +10,8 @@ namespace Verticality.Moves.ChargedJump
 {
     internal class EntityBehaviorChargedJump : EntityBehavior
     {
-        private const float jumpForceAdd = 1.7f;
-        private const float jumpChargeTime = 1.5f;
+        private static float jumpForceAdd = ConfigManager.modConfig.chargedJumpAddForce;
+        private static float jumpChargeTime => ConfigManager.modConfig.chargedJumpChargeTime;
 
         private float jumpForce
         {

@@ -1,4 +1,5 @@
-﻿using Verticality.Moves.ChargedJump;
+﻿using Verticality.Lib;
+using Verticality.Moves.ChargedJump;
 using Verticality.Moves.Climb;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -13,6 +14,8 @@ namespace Verticality
 
             api.RegisterEntityBehaviorClass("climb", typeof(EntityBehaviorClimb));
             api.RegisterEntityBehaviorClass("chargedjump", typeof(EntityBehaviorChargedJump));
+
+            ConfigManager.Initialise(api);
         }
 
         public override void StartClientSide(ICoreClientAPI capi)

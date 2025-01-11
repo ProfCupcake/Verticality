@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Client;
+﻿using Verticality.Lib;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 
@@ -6,9 +7,9 @@ namespace Verticality.Moves.Climb
 {
     internal class EntityBehaviorClimb : EntityBehavior
     {
-        public const float minHeight = 0.5f; // minimum height from player's feet
-        public const float maxHeight = 0.7f; // maximum height from player's LocalEyePos
-        public const float grabDistance = 0.5f; // maximum distance to grab point
+        public static float minHeight => ConfigManager.modConfig.climbMinHeight; // minimum height from player's feet
+        public static float maxHeight => ConfigManager.modConfig.climbMaxHeight; // maximum height from player's LocalEyePos
+        public static float grabDistance => ConfigManager.modConfig.climbGrabDistance; // maximum distance to grab point
 
         private Grab grab;
 
