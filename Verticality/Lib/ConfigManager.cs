@@ -9,6 +9,9 @@ namespace Verticality.Lib
     {
         private const string ConfigFilename = "verticality.json";
         private const string NetChannel = "verticality";
+
+        private static bool receivedConfig = false;
+
         private static ICoreAPI api;
 
         private static VerticalityModConfig _modConfig;
@@ -17,7 +20,11 @@ namespace Verticality.Lib
         {
             get
             {
-                if (_modConfig == null) Reload();
+                if (_modConfig == null) { Reload(); }
+                else if (api.Side == EnumAppSide.Client)
+                {
+                    if (!receivedConfig) Reload();
+                }
                 return _modConfig;
             }
             set
@@ -69,6 +76,7 @@ namespace Verticality.Lib
         private static void ReceiveConfig(VerticalityModConfig packet)
         {
             modConfig = packet;
+            receivedConfig = true;
         }
         private static void SendConfig(IServerPlayer fromPlayer, NetMessage_Request packet)
         {
