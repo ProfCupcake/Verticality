@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Client;
+﻿using ProtoBuf;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
@@ -79,6 +80,7 @@ namespace Verticality.Lib
         }
 
     }
+    [ProtoContract]
     internal class NetMessage_Request
     {
     }

@@ -1,6 +1,6 @@
 ﻿using ProtoBuf;
 
-namespace Verticality.Lib
+namespace Verticality
 {
     [ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
     public class VerticalityModConfig
