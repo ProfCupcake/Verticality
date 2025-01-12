@@ -19,7 +19,7 @@ namespace Verticality
             api.RegisterEntityBehaviorClass("climb", typeof(EntityBehaviorClimb));
             api.RegisterEntityBehaviorClass("chargedjump", typeof(EntityBehaviorChargedJump));
 
-            Config = new ConfigManager(api);
+            Config = new ConfigManager(api, "verticality.json", "verticality");
         }
 
         public override void StartClientSide(ICoreClientAPI capi)

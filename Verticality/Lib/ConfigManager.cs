@@ -7,8 +7,8 @@ namespace Verticality.Lib
 {
     public class ConfigManager
     {
-        private const string ConfigFilename = "verticality.json";
-        private const string NetChannel = "verticality";
+        private readonly string ConfigFilename;
+        private readonly string NetChannel;
 
         private bool receivedConfig = false;
 
@@ -35,8 +35,11 @@ namespace Verticality.Lib
             }
         }
 
-        public ConfigManager(ICoreAPI api)
+        public ConfigManager(ICoreAPI api, string filename, string netchannel)
         {
+            ConfigFilename = filename;
+            NetChannel = netchannel;
+            
             this.api = api;
             api.Logger.Event("[verticality] initialising networking");
             switch (api.Side)
