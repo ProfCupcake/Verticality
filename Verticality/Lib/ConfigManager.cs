@@ -41,16 +41,13 @@ namespace Verticality.Lib
             NetChannel = netchannel;
             
             this.api = api;
-            api.Logger.Event("[verticality] initialising networking");
             switch (api.Side)
             {
                 case EnumAppSide.Client:
                     capi = api as ICoreClientAPI;
-                    api.Logger.Event("[verticality] network client init");
                     break;
                 case EnumAppSide.Server:
                     sapi = api as ICoreServerAPI;
-                    api.Logger.Event("[verticality] network server init");
                     break;
             }
 
@@ -62,17 +59,12 @@ namespace Verticality.Lib
             {
                 case (EnumAppSide.Client):
                     capi.Network.GetChannel(NetChannel).SetMessageHandler<VerticalityModConfig>(ReceiveConfig);
-                    api.Logger.Event("[verticality] client setMessageHandler set");
                     break;
                 case (EnumAppSide.Server):
                     sapi.Network.GetChannel(NetChannel).SetMessageHandler<NetMessage_Request>(SendConfig);
-                    api.Logger.Event("[verticality] server setMessageHandler set");
                     Reload();
                     break;
             }
-
-            if (sapi != null) sapi.Logger.Event("[verticality] server side network init complete");
-            if (capi != null) capi.Logger.Event("[verticality] client side network init complete");
         }
 
         public void Reload()
@@ -84,11 +76,11 @@ namespace Verticality.Lib
                     RequestConfig();
                     break;
                 case (EnumAppSide.Server):
-                    api.Logger.Event("[verticality] trying to load config");
+                    api.Logger.Event("[{0}] trying to load config", new object[] { NetChannel });
                     _modConfig = api.LoadModConfig<VerticalityModConfig>(ConfigFilename);
                     if (_modConfig == null)
                     {
-                        api.Logger.Event("[verticality] generating new config");
+                        api.Logger.Event("[{0}] generating new config", new object[] { NetChannel });
                         _modConfig = new VerticalityModConfig();
                         api.StoreModConfig(_modConfig, ConfigFilename);
                     }
@@ -104,11 +96,11 @@ namespace Verticality.Lib
         {
             _modConfig = packet;
             receivedConfig = true;
-            api.Logger.Event("[verticality] received mod config from server");
+            api.Logger.Event("[{0}] received mod config from server", new object[] { NetChannel });
         }
         private void SendConfig(IServerPlayer fromPlayer, NetMessage_Request packet)
         {
-            api.Logger.Event("[verticality] sending mod config to client {0}", new object[] {fromPlayer.PlayerName});
+            api.Logger.Event("[{0}] sending mod config to client {1}", new object[] {NetChannel, fromPlayer.PlayerName});
             sapi.Network.GetChannel(NetChannel).SendPacket(modConfig, fromPlayer);
         }
         public void BroadcastConfig()
