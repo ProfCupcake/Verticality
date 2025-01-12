@@ -8,6 +8,10 @@ namespace Verticality
 {
     public class VerticalityModSystem : ModSystem
     {
+        public static ConfigManager Config
+        {
+            get; private set;
+        }
         public override void Start(ICoreAPI api)
         {
             base.Start(api);
@@ -15,7 +19,7 @@ namespace Verticality
             api.RegisterEntityBehaviorClass("climb", typeof(EntityBehaviorClimb));
             api.RegisterEntityBehaviorClass("chargedjump", typeof(EntityBehaviorChargedJump));
 
-            ConfigManager.Initialise(api);
+            Config = new ConfigManager(api);
         }
 
         public override void StartClientSide(ICoreClientAPI capi)

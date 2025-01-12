@@ -7,9 +7,29 @@ namespace Verticality.Moves.Climb
 {
     internal class EntityBehaviorClimb : EntityBehavior
     {
-        public static float minHeight => ConfigManager.modConfig.climbMinHeight; // minimum height from player's feet
-        public static float maxHeight => ConfigManager.modConfig.climbMaxHeight; // maximum height from player's LocalEyePos
-        public static float grabDistance => ConfigManager.modConfig.climbGrabDistance; // maximum distance to grab point
+        public static float minHeight
+        {
+            get
+            {
+                return VerticalityModSystem.Config.modConfig.climbMinHeight;
+            }
+        }
+
+        public static float maxHeight
+        {
+            get
+            {
+                return VerticalityModSystem.Config.modConfig.climbMaxHeight;
+            }
+        }
+
+        public static float grabDistance
+        {
+            get
+            {
+                return VerticalityModSystem.Config.modConfig.climbGrabDistance;
+            }
+        }
 
         private Grab grab;
 
