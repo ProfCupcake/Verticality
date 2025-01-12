@@ -1,3 +1,1 @@
-- reintroduced config file, plus added sync of config from server to client
-- slightly increased charged jump force
-- reduced charged jump charge time to half a second
+- fixed config issues (i hope)

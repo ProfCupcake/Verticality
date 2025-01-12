@@ -10,8 +10,20 @@ namespace Verticality.Moves.ChargedJump
 {
     internal class EntityBehaviorChargedJump : EntityBehavior
     {
-        private static float jumpForceAdd = ConfigManager.modConfig.chargedJumpAddForce;
-        private static float jumpChargeTime => ConfigManager.modConfig.chargedJumpChargeTime;
+        private static float jumpForceAdd
+        {
+            get
+            {
+                return VerticalityModSystem.Config.modConfig.chargedJumpAddForce;
+            }
+        }
+        private static float jumpChargeTime
+        {
+            get
+            {
+                return VerticalityModSystem.Config.modConfig.chargedJumpChargeTime;
+            }
+        }
 
         private float jumpForce
         {
