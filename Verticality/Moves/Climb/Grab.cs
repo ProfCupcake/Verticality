@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 using static Verticality.Lib.CollisionUtils;
 
 namespace Verticality.Moves.Climb
@@ -19,11 +21,13 @@ namespace Verticality.Moves.Climb
         // Checks if given player can grab, then either returns the successful Grab or null if not successful
         public static Grab TryGrab(EntityPlayer entity)
         {
-            Vec3d grabLoc = GetGrabLocation(entity);
+            Vec3d grabLoc = GetGrabLocationByRaycast(entity);
+
+            if (grabLoc == null) return null;
 
             double relHeightFeet = grabLoc.Y - entity.Pos.Y;
             double relHeightEyes = relHeightFeet - entity.LocalEyePos.Y;
-
+            
             if (relHeightFeet > minHeight && relHeightEyes < maxHeight)
             {
                 return new Grab()
@@ -31,8 +35,24 @@ namespace Verticality.Moves.Climb
                     player = entity,
                     preciseGrabPos = grabLoc
                 };
+                //debugParticles.Color = ColorUtil.ColorFromRgba(0, 255, 0, 255);
+            }/* else
+            {
+                debugParticles.Color = ColorUtil.ColorFromRgba(0, 0, 255, 255);
             }
+            
+            debugParticles.MinPos = grabLoc;
+            Vec3d towardsPlayer = grabLoc.SubCopy(entity.Pos.XYZ.AddCopy(0, minHeight, 0)).Normalize();
+            debugParticles.MinVelocity = towardsPlayer.ToVec3f() * -2;
+            debugParticles.AddVelocity = Vec3f.Zero;
 
+            entity.World.SpawnParticles(debugParticles);
+
+            debugParticles.MinVelocity = new Vec3f(-0.1f, -0.1f, -0.1f);
+            debugParticles.AddVelocity = new Vec3f(0.2f, 0.2f, 0.2f);
+
+            entity.World.SpawnParticles(debugParticles);
+            */
             return null;
         }
 
@@ -60,7 +80,8 @@ namespace Verticality.Moves.Climb
             Color = ColorUtil.WhiteArgb,
             AddPos = Vec3d.Zero,
             LifeLength = 0.1f,
-            ParticleModel = EnumParticleModel.Cube
+            ParticleModel = EnumParticleModel.Cube,
+            LightEmission = ColorUtil.WhiteArgb
         };
 
         // Find closest collision, if any, within a region of blocks in front of player
@@ -146,6 +167,66 @@ namespace Verticality.Moves.Climb
             } //*/
 
             return topPos;
+        }
+
+        public static Vec3d GetGrabLocationByRaycast(EntityPlayer player)
+        {
+            float[] offsets = new float[]
+            {
+                0,
+                0.1f, -0.1f,
+                0.25f, -0.25f,
+                0.5f, -0.5f
+            };
+            foreach (float offset in offsets)
+            {
+                Vec3d outPos = DoGrabRaycast(player, offset * GameMath.PIHALF);
+                if (outPos != null) return outPos;
+            }
+            return null;
+        }
+
+        public static Vec3d DoGrabRaycast(EntityPlayer player, float yawOffset = 0)
+        {
+            ICoreClientAPI capi = player.Api as ICoreClientAPI;
+
+            Ray ray = Ray.FromAngles(player.Pos.XYZ.AddCopy(0, minHeight, 0), 0, (player.Pos.Yaw - GameMath.PI) + yawOffset, grabDistance);
+            AABBIntersectionTest aabb = player.World.InteresectionTester;
+            aabb.LoadRayAndPos(ray);
+            BlockSelection bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+            Vec3d outPos = null;
+            if (bs != null)
+            {
+                bs.HitPosition.Sub(bs.Face.Normald * 1 / 128f);
+                Vec3d bottom = bs.FullPosition.Clone();
+                ray = Ray.FromPositions(
+                    bs.FullPosition.AddCopy(0, maxHeight + player.LocalEyePos.Y, 0),
+                    bottom
+                    );
+                aabb.LoadRayAndPos(ray);
+                bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+                while (bs != null && ray.Length > 0)
+                {
+                    outPos = bs.FullPosition.Clone();
+                    ray = Ray.FromPositions(
+                        bs.FullPosition.Clone(),
+                        bs.FullPosition.AddCopy(0, 1 / 64f, 0)
+                        );
+                    aabb.LoadRayAndPos(ray);
+                    bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+
+                    if (bs == null) return outPos;
+
+                    ray = Ray.FromPositions(
+                        outPos.SubCopy(0, 1/128f, 0),
+                        bottom
+                        );
+                    aabb.LoadRayAndPos(ray);
+                    bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
+using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.Common;
 
 namespace Verticality.Lib
 {
@@ -78,6 +80,32 @@ namespace Verticality.Lib
             Array.ConstrainedCopy(arr1, 0, outArr, 0, arr1.Length);
             Array.ConstrainedCopy(arr2, 0, outArr, arr1.Length, arr2.Length);
             return outArr;
+        }
+
+        // Returns new position, moved to closest horizontal edge
+        public static Vec3d MoveToEdge(Cuboidf box, Vec3d pos)
+        {
+            Vec3d fromMiddle = pos.SubCopy(box.Center);
+            if (Math.Abs(fromMiddle.X) > Math.Abs(fromMiddle.Z))
+            {
+                if (fromMiddle.X > 0)
+                {
+                    return new(box.MaxX, pos.Y, pos.Z);
+                } else
+                {
+                    return new(box.MinX, pos.Y, pos.Z);
+                }
+            } else
+            {
+                if (fromMiddle.Z > 0)
+                {
+                    return new(pos.X, pos.Y, box.MaxZ);
+                }
+                else
+                {
+                    return new(pos.X, pos.Y, box.MaxZ);
+                }
+            }
         }
     }
 }
