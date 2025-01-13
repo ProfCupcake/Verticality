@@ -11,6 +11,7 @@ namespace Verticality.Lib
         private readonly string NetChannel;
 
         private bool receivedConfig = false;
+        private bool requestedConfig = false;
 
         private ICoreAPI api;
         private ICoreServerAPI sapi;
@@ -25,7 +26,10 @@ namespace Verticality.Lib
                 if (_modConfig == null) { Reload(); }
                 else if (api.Side == EnumAppSide.Client)
                 {
-                    if (!receivedConfig) Reload();
+                    if (!receivedConfig && !requestedConfig)
+                    {
+                        Reload();
+                    }
                 }
                 return _modConfig;
             }
@@ -74,6 +78,7 @@ namespace Verticality.Lib
                 case (EnumAppSide.Client):
                     _modConfig = new VerticalityModConfig();
                     RequestConfig();
+                    requestedConfig = true;
                     break;
                 case (EnumAppSide.Server):
                     api.Logger.Event("[{0}] trying to load config", new object[] { NetChannel });
@@ -91,6 +96,7 @@ namespace Verticality.Lib
         public void RequestConfig()
         {
             capi.Network.GetChannel(NetChannel).SendPacket<NetMessage_Request>(new());
+            api.Event.RegisterCallback((float d) => { requestedConfig = false; }, 5000);
         }
         private void ReceiveConfig(VerticalityModConfig packet)
         {
