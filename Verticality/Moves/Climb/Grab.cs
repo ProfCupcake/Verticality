@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -174,13 +175,17 @@ namespace Verticality.Moves.Climb
             float[] offsets = new float[]
             {
                 0,
-                0.1f, -0.1f,
-                0.25f, -0.25f,
-                0.5f, -0.5f
+                0.12f, -0.12f,
+                0.25f, -0.25f
             };
             foreach (float offset in offsets)
             {
                 Vec3d outPos = DoGrabRaycast(player, offset * GameMath.PIHALF);
+                if (outPos != null) return outPos;
+            }
+            foreach (float offset in offsets)
+            {
+                Vec3d outPos = DoGrabRaycast(player, offset * GameMath.PIHALF, (float)player.LocalEyePos.Y);
                 if (outPos != null) return outPos;
             }
             return null;
@@ -188,9 +193,14 @@ namespace Verticality.Moves.Climb
 
         public static Vec3d DoGrabRaycast(EntityPlayer player, float yawOffset = 0)
         {
+            return DoGrabRaycast(player, yawOffset, minHeight);
+        }
+
+        public static Vec3d DoGrabRaycast(EntityPlayer player, float yawOffset, float heightOffset)
+        {
             ICoreClientAPI capi = player.Api as ICoreClientAPI;
 
-            Ray ray = Ray.FromAngles(player.Pos.XYZ.AddCopy(0, minHeight, 0), 0, (player.Pos.Yaw - GameMath.PI) + yawOffset, grabDistance);
+            Ray ray = Ray.FromAngles(player.Pos.XYZ.AddCopy(0, heightOffset, 0), 0, (player.Pos.Yaw - GameMath.PI) + yawOffset, grabDistance);
             AABBIntersectionTest aabb = player.World.InteresectionTester;
             aabb.LoadRayAndPos(ray);
             BlockSelection bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
