@@ -17,7 +17,9 @@ namespace Verticality.Moves.Climb
 
         private EntityPlayer player;
 
-        private BlockSelection grabPos;
+        public BlockSelection grabPos;
+
+        public double lastY;
 
         // Checks if given player can grab, then either returns the successful Grab or null if not successful
         public static Grab TryGrab(EntityPlayer entity)
@@ -34,7 +36,8 @@ namespace Verticality.Moves.Climb
                 return new Grab()
                 {
                     player = entity,
-                    grabPos = grabLoc
+                    grabPos = grabLoc,
+                    lastY = entity.Pos.Y
                 };
                 //debugParticles.Color = ColorUtil.ColorFromRgba(0, 255, 0, 255);
             }/* else
@@ -63,9 +66,9 @@ namespace Verticality.Moves.Climb
             double relHeightFeet = grabPos.FullPosition.Y - player.Pos.Y;
             double relHeightEyes = relHeightFeet - player.LocalEyePos.Y;
 
-            if (relHeightFeet < 0 || relHeightEyes > maxHeight) return false;
+            if (relHeightFeet < 0/* || relHeightEyes > maxHeight*/) return false;
 
-            if (player.Pos.HorDistanceTo(grabPos.FullPosition) > grabDistance) return false;
+            //if (player.Pos.HorDistanceTo(grabPos.FullPosition) > grabDistance) return false;
 
             if (!GapCheck(grabPos.FullPosition, player.World.InteresectionTester)) return false;
 
@@ -74,6 +77,12 @@ namespace Verticality.Moves.Climb
 
         public static bool GapCheck(Vec3d pos, AABBIntersectionTest aabb)
         {
+            BlockSelection _ = null;
+            return GapCheck(pos, aabb, ref _);
+        }
+
+        public static bool GapCheck(Vec3d pos, AABBIntersectionTest aabb, ref BlockSelection outBS)
+        {
             Ray ray = Ray.FromPositions(
                 pos.AddCopy(0, 1 / 64f, 0),
                 pos.SubCopy(0, 1 / 128f, 0)
@@ -81,6 +90,9 @@ namespace Verticality.Moves.Climb
             aabb.LoadRayAndPos(ray);
             BlockSelection bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
             if (bs == null) return false;
+
+            outBS = bs.Clone();
+            outBS.Block ??= bs.Block;
 
             ray = Ray.FromPositions(
                 pos.Clone(),
@@ -234,6 +246,7 @@ namespace Verticality.Moves.Climb
             BlockSelection bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
             if (bs != null)
             {
+                BlockFacing face = bs.Face;
                 bs.HitPosition.Sub(bs.Face.Normald * 1 / 128f);
                 Vec3d bottom = bs.FullPosition.Clone();
                 ray = Ray.FromPositions(
@@ -244,7 +257,12 @@ namespace Verticality.Moves.Climb
                 bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
                 while (bs != null && ray.Length > 1/128f)
                 {
-                    if (GapCheck(bs.FullPosition, aabb)) return bs;
+                    if (GapCheck(bs.FullPosition, aabb))
+                    {
+                        bs.Face = face;
+                        //((ICoreClientAPI)player.Api).ShowChatMessage("Grab! Face: " + face.ToString());
+                        return bs;
+                    }
 
                     ray = Ray.FromPositions(
                         bs.FullPosition.SubCopy(0, 1/128f, 0),
@@ -256,6 +274,19 @@ namespace Verticality.Moves.Climb
             }
 
             return null;
+        }
+
+        public bool TrySlide(double slide)
+        {
+            Vec3d newPos = grabPos.FullPosition.AddCopy(grabPos.Face.GetHorizontalRotated(90).Normald.Clone().Scale(slide));
+            BlockSelection bs = null;
+            if (GapCheck(newPos, player.World.InteresectionTester, ref bs))
+            {
+                bs.Face = grabPos.Face;
+                grabPos = bs;
+                return true;
+            }
+            return false;
         }
     }
 }

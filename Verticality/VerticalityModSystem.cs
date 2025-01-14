@@ -1,4 +1,5 @@
-﻿using Verticality.Lib;
+﻿using HarmonyLib;
+using Verticality.Lib;
 using Verticality.Moves.ChargedJump;
 using Verticality.Moves.Climb;
 using Vintagestory.API.Client;
@@ -8,9 +9,25 @@ namespace Verticality
 {
     public class VerticalityModSystem : ModSystem
     {
+        public const string patchName = "com.profcupcake.verticality";
+
+        Harmony harmony;
         public static ConfigManager Config
         {
             get; private set;
+        }
+        public override void StartPre(ICoreAPI api)
+        {
+            base.StartPre(api);
+
+            harmony = new(patchName);
+            harmony.PatchAll();
+        }
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            harmony.UnpatchAll(patchName);
         }
         public override void Start(ICoreAPI api)
         {
