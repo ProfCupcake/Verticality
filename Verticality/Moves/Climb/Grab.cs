@@ -65,7 +65,22 @@ namespace Verticality.Moves.Climb
 
             if (relHeightFeet < 0 || relHeightEyes > maxHeight) return false;
 
-            if (grabPos.Block != player.World.BlockAccessor.GetBlock(grabPos.Position)) return false;
+            Ray ray = Ray.FromPositions(
+                grabPos.FullPosition.AddCopy(0, 1 / 64f, 0),
+                grabPos.FullPosition.Clone().SubCopy(0, 1 / 128f, 0)
+                );
+            AABBIntersectionTest aabb = player.World.InteresectionTester;
+            aabb.LoadRayAndPos(ray);
+            BlockSelection bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+            if (bs == null) return false;
+
+            ray = Ray.FromPositions(
+                grabPos.FullPosition.Clone(),
+                grabPos.FullPosition.AddCopy(0, 1 / 64f, 0)
+                );
+            aabb.LoadRayAndPos(ray);
+            bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+            if (bs != null) return false;
 
             return true;
         }
