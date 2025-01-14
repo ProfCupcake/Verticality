@@ -65,6 +65,8 @@ namespace Verticality.Moves.Climb
 
             if (relHeightFeet < 0 || relHeightEyes > maxHeight) return false;
 
+            if (player.Pos.HorDistanceTo(grabPos.FullPosition) > grabDistance) return false;
+
             if (!GapCheck(grabPos.FullPosition, player.World.InteresectionTester)) return false;
 
             return true;
