@@ -1,1 +1,3 @@
-- fixed config issues (i hope)
+- grab now drops if the grabbed block changes
+- implemented fancy new raycast-based ledge detection
+- tightened grab arc: it now roughly checks a 45° arc in front of player (i.e. 22.5° each way from centre)

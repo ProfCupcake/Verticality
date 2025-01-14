@@ -63,10 +63,11 @@ namespace Verticality.Moves.Climb
             double relHeightFeet = grabPos.FullPosition.Y - player.Pos.Y;
             double relHeightEyes = relHeightFeet - player.LocalEyePos.Y;
 
-            if (relHeightFeet >= 0 && relHeightEyes < maxHeight)
-                return player.Pos.HorDistanceTo(grabPos.FullPosition) <= grabDistance;
+            if (relHeightFeet < 0 || relHeightEyes > maxHeight) return false;
 
-            return false;
+            if (grabPos.Block != player.World.BlockAccessor.GetBlock(grabPos.Position)) return false;
+
+            return true;
         }
 
         public static SimpleParticleProperties debugParticles = new()
@@ -218,6 +219,7 @@ namespace Verticality.Moves.Climb
                 while (bs != null && ray.Length > 0)
                 {
                     BlockSelection outSel = bs.Clone();
+                    outSel.Block ??= aabb.bsTester.blockAccessor.GetBlock(outSel.Position); // for some reason, the BlockSelection Clone() doesn't clone the Block field
                     outPos = bs.FullPosition.Clone();
                     ray = Ray.FromPositions(
                         bs.FullPosition.Clone(),
@@ -226,7 +228,10 @@ namespace Verticality.Moves.Climb
                     aabb.LoadRayAndPos(ray);
                     bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
 
-                    if (bs == null) return outSel;
+                    if (bs == null)
+                    {
+                        return outSel;
+                    }
 
                     ray = Ray.FromPositions(
                         outPos.SubCopy(0, 1/128f, 0),
