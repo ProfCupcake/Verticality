@@ -65,18 +65,24 @@ namespace Verticality.Moves.Climb
 
             if (relHeightFeet < 0 || relHeightEyes > maxHeight) return false;
 
+            if (!GapCheck(grabPos.FullPosition, player.World.InteresectionTester)) return false;
+
+            return true;
+        }
+
+        public static bool GapCheck(Vec3d pos, AABBIntersectionTest aabb)
+        {
             Ray ray = Ray.FromPositions(
-                grabPos.FullPosition.AddCopy(0, 1 / 64f, 0),
-                grabPos.FullPosition.Clone().SubCopy(0, 1 / 128f, 0)
+                pos.AddCopy(0, 1 / 64f, 0),
+                pos.SubCopy(0, 1 / 128f, 0)
                 );
-            AABBIntersectionTest aabb = player.World.InteresectionTester;
             aabb.LoadRayAndPos(ray);
             BlockSelection bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
             if (bs == null) return false;
 
             ray = Ray.FromPositions(
-                grabPos.FullPosition.Clone(),
-                grabPos.FullPosition.AddCopy(0, 1 / 64f, 0)
+                pos.Clone(),
+                pos.AddCopy(0, 1 / 64f, 0)
                 );
             aabb.LoadRayAndPos(ray);
             bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
@@ -224,7 +230,6 @@ namespace Verticality.Moves.Climb
             AABBIntersectionTest aabb = player.World.InteresectionTester;
             aabb.LoadRayAndPos(ray);
             BlockSelection bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
-            Vec3d outPos = null;
             if (bs != null)
             {
                 bs.HitPosition.Sub(bs.Face.Normald * 1 / 128f);
@@ -235,25 +240,12 @@ namespace Verticality.Moves.Climb
                     );
                 aabb.LoadRayAndPos(ray);
                 bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
-                while (bs != null && ray.Length > 0)
+                while (bs != null && ray.Length > 1/128f)
                 {
-                    BlockSelection outSel = bs.Clone();
-                    outSel.Block ??= aabb.bsTester.blockAccessor.GetBlock(outSel.Position); // for some reason, the BlockSelection Clone() doesn't clone the Block field
-                    outPos = bs.FullPosition.Clone();
-                    ray = Ray.FromPositions(
-                        bs.FullPosition.Clone(),
-                        bs.FullPosition.AddCopy(0, 1 / 64f, 0)
-                        );
-                    aabb.LoadRayAndPos(ray);
-                    bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
-
-                    if (bs == null)
-                    {
-                        return outSel;
-                    }
+                    if (GapCheck(bs.FullPosition, aabb)) return bs;
 
                     ray = Ray.FromPositions(
-                        outPos.SubCopy(0, 1/128f, 0),
+                        bs.FullPosition.SubCopy(0, 1/128f, 0),
                         bottom
                         );
                     aabb.LoadRayAndPos(ray);
