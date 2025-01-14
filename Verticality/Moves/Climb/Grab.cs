@@ -17,16 +17,16 @@ namespace Verticality.Moves.Climb
 
         private EntityPlayer player;
 
-        private Vec3d preciseGrabPos;
+        private BlockSelection grabPos;
 
         // Checks if given player can grab, then either returns the successful Grab or null if not successful
         public static Grab TryGrab(EntityPlayer entity)
         {
-            Vec3d grabLoc = GetGrabLocationByRaycast(entity);
+            BlockSelection grabLoc = GetGrabLocationByRaycast(entity);
 
             if (grabLoc == null) return null;
 
-            double relHeightFeet = grabLoc.Y - entity.Pos.Y;
+            double relHeightFeet = grabLoc.FullPosition.Y - entity.Pos.Y;
             double relHeightEyes = relHeightFeet - entity.LocalEyePos.Y;
             
             if (relHeightFeet > minHeight && relHeightEyes < maxHeight)
@@ -34,7 +34,7 @@ namespace Verticality.Moves.Climb
                 return new Grab()
                 {
                     player = entity,
-                    preciseGrabPos = grabLoc
+                    grabPos = grabLoc
                 };
                 //debugParticles.Color = ColorUtil.ColorFromRgba(0, 255, 0, 255);
             }/* else
@@ -60,11 +60,11 @@ namespace Verticality.Moves.Climb
         // Checks and returns whether player should still be holding onto this grab point
         public bool CanStillGrab()
         {
-            double relHeightFeet = preciseGrabPos.Y - player.Pos.Y;
+            double relHeightFeet = grabPos.FullPosition.Y - player.Pos.Y;
             double relHeightEyes = relHeightFeet - player.LocalEyePos.Y;
 
             if (relHeightFeet >= 0 && relHeightEyes < maxHeight)
-                return player.Pos.HorDistanceTo(preciseGrabPos) <= grabDistance;
+                return player.Pos.HorDistanceTo(grabPos.FullPosition) <= grabDistance;
 
             return false;
         }
@@ -170,7 +170,7 @@ namespace Verticality.Moves.Climb
             return topPos;
         }
 
-        public static Vec3d GetGrabLocationByRaycast(EntityPlayer player)
+        public static BlockSelection GetGrabLocationByRaycast(EntityPlayer player)
         {
             float[] offsets = new float[]
             {
@@ -180,23 +180,23 @@ namespace Verticality.Moves.Climb
             };
             foreach (float offset in offsets)
             {
-                Vec3d outPos = DoGrabRaycast(player, offset * GameMath.PIHALF);
+                BlockSelection outPos = DoGrabRaycast(player, offset * GameMath.PIHALF);
                 if (outPos != null) return outPos;
             }
             foreach (float offset in offsets)
             {
-                Vec3d outPos = DoGrabRaycast(player, offset * GameMath.PIHALF, (float)player.LocalEyePos.Y);
+                BlockSelection outPos = DoGrabRaycast(player, offset * GameMath.PIHALF, (float)player.LocalEyePos.Y);
                 if (outPos != null) return outPos;
             }
             return null;
         }
 
-        public static Vec3d DoGrabRaycast(EntityPlayer player, float yawOffset = 0)
+        public static BlockSelection DoGrabRaycast(EntityPlayer player, float yawOffset = 0)
         {
             return DoGrabRaycast(player, yawOffset, minHeight);
         }
 
-        public static Vec3d DoGrabRaycast(EntityPlayer player, float yawOffset, float heightOffset)
+        public static BlockSelection DoGrabRaycast(EntityPlayer player, float yawOffset, float heightOffset)
         {
             ICoreClientAPI capi = player.Api as ICoreClientAPI;
 
@@ -217,6 +217,7 @@ namespace Verticality.Moves.Climb
                 bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
                 while (bs != null && ray.Length > 0)
                 {
+                    BlockSelection outSel = bs.Clone();
                     outPos = bs.FullPosition.Clone();
                     ray = Ray.FromPositions(
                         bs.FullPosition.Clone(),
@@ -225,7 +226,7 @@ namespace Verticality.Moves.Climb
                     aabb.LoadRayAndPos(ray);
                     bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
 
-                    if (bs == null) return outPos;
+                    if (bs == null) return outSel;
 
                     ray = Ray.FromPositions(
                         outPos.SubCopy(0, 1/128f, 0),
