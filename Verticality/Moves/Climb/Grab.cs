@@ -104,6 +104,7 @@ namespace Verticality.Moves.Climb
         // Find closest collision, if any, within a region of blocks in front of player
         // if collision found, crawl up surface until a gap is found or max height reached
         // return location of gap, if any
+        [Obsolete]
         public static Vec3d GetGrabLocation(EntityPlayer entity)
         {
             float yaw = entity.BodyYaw - GameMath.PIHALF;
@@ -188,21 +189,24 @@ namespace Verticality.Moves.Climb
 
         public static BlockSelection GetGrabLocationByRaycast(EntityPlayer player)
         {
-            float[] offsets = new float[]
+            float[] heightOffsets = new float[] { 
+                minHeight, 
+                (float)player.LocalEyePos.Y * 0.8f
+            };
+            float[] yawOffsets = new float[]
             {
                 0,
                 0.12f, -0.12f,
                 0.25f, -0.25f
             };
-            foreach (float offset in offsets)
+
+            foreach (float heightOffset in heightOffsets)
             {
-                BlockSelection outPos = DoGrabRaycast(player, offset * GameMath.PIHALF);
-                if (outPos != null) return outPos;
-            }
-            foreach (float offset in offsets)
-            {
-                BlockSelection outPos = DoGrabRaycast(player, offset * GameMath.PIHALF, (float)player.LocalEyePos.Y);
-                if (outPos != null) return outPos;
+                foreach (float yawOffset in yawOffsets)
+                {
+                    BlockSelection outPos = DoGrabRaycast(player, yawOffset * GameMath.PIHALF, heightOffset);
+                    if (outPos != null) return outPos;
+                }
             }
             return null;
         }
