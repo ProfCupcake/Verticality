@@ -12,4 +12,9 @@ namespace Verticality
         public float chargedJumpChargeTime = 0.5f;
         public float chargedJumpAddForce = 1.9f;
     }
+
+    public class VerticalityClientModConfig
+    {
+        public bool showDebugParticles = false;
+    }
 }

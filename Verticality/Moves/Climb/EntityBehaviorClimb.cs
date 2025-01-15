@@ -69,9 +69,12 @@ namespace Verticality.Moves.Climb
                     if (grab.CanStillGrab())
                     {
                         //player.Properties.CanClimbAnywhere = true;
-                        Grab.debugParticles.MinPos = grab.grabPos.FullPosition;
-                        Grab.debugParticles.Color = ColorUtil.WhiteArgb;
-                        player.World.SpawnParticles(Grab.debugParticles);
+                        if (VerticalityModSystem.ClientConfig.showDebugParticles)
+                        {
+                            Grab.debugParticles.MinPos = grab.grabPos.FullPosition;
+                            Grab.debugParticles.Color = ColorUtil.WhiteArgb;
+                            player.World.SpawnParticles(Grab.debugParticles);
+                        }
                     }
                     else
                     {
