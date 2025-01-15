@@ -59,7 +59,7 @@ namespace Verticality
                 capi.StoreModConfig(ClientConfig, clientConfigFilename);
             } else capi.Logger.Event("[verticality] client config loaded");
 
-            capi.Input.RegisterHotKey("climb", "Climb", GlKeys.LControl, HotkeyType.MovementControls);
+            capi.Input.RegisterHotKey("climb", "Climb", GlKeys.R, HotkeyType.MovementControls);
         }
     }
 }
