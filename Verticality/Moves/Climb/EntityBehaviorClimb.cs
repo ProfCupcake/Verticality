@@ -1,4 +1,5 @@
-﻿using Verticality.Lib;
+﻿using System;
+using Verticality.Lib;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -61,7 +62,7 @@ namespace Verticality.Moves.Climb
             {
                 if (grab == null)
                 {
-                    grab = Grab.TryGrab(player);
+                    grab = Grab.TryGrab(player, null, null, (float?)(grabDistance * Math.Max(1, player.Pos.Motion.Length() * 3)));
                 }
                 else
                 {

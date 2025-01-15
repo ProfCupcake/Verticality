@@ -18,6 +18,7 @@ namespace Verticality.Moves.Climb
         float maxHeight => VerticalityModSystem.Config.modConfig.climbMaxHeight;
         float minHeight => VerticalityModSystem.Config.modConfig.climbMinHeight;
         float grabDistance => VerticalityModSystem.Config.modConfig.climbGrabDistance;
+        float climbSpeed => VerticalityModSystem.Config.modConfig.climbSpeed;
         EntityBehaviorClimb climbEB;
         Grab grab;
 
@@ -33,29 +34,9 @@ namespace Verticality.Moves.Climb
 
         public override void DoApply(float dt, Entity entity, EntityPos pos, EntityControls controls)
         {
+            bool grabYLowered = false;
             Vec3d walkVectorRelativeToGrabFace = controls.WalkVector.RotatedCopy(grab.grabPos.Face.HorizontalAngleIndex * -GameMath.PIHALF);
-            Vec3d posBefore = grab.grabPos.FullPosition;
-            /*
-            double slide = 0;
-            switch(grab.grabPos.Face.HorizontalAngleIndex)
-            {
-                case 0:
-                case 2:
-                    slide = (pos.Z - grab.grabPos.FullPosition.Z)/2;
-                    break;
-                case 1:
-                case 3:
-                    slide = (pos.X - grab.grabPos.FullPosition.X)/2;
-                    break;
-            }
-            if (!entity.OnGround)
-            {
-                if (grab.TrySlide(slide))
-                {
-                    //pos.Add(grab.grabPos.FullPosition.SubCopy(posBefore).ToVec3f());
-                }
-            }*/
-
+            
             controls.IsClimbing = true;
 
             double relHeightEyes = grab.grabPos.FullPosition.Y - (pos.Y + entity.LocalEyePos.Y);
@@ -64,9 +45,22 @@ namespace Verticality.Moves.Climb
             Vec3d diffVec = grab.grabPos.FullPosition.SubCopy(pos.XYZ);
             diffVec.Y = 0;
             double diffH = diffVec.Length();
-            if (diffH > grabDistance || diffV < 0)
+            if (diffV < 0)
             {
-                Grab prospectiveNewGrab = Grab.TryGrab((EntityPlayer)entity);
+                Grab prospectiveNewGrab = Grab.TryGrab((EntityPlayer)entity, null, (float?)(grab.grabPos.FullPosition.Y - 1 / 64f), grabDistance + 0.2f);
+                if (prospectiveNewGrab != null)
+                {
+                    climbEB.grab = prospectiveNewGrab;
+                    grab = prospectiveNewGrab;
+                    grabYLowered = true;
+                } else
+                {
+                    pos.Y -= diffV;
+                }
+            }
+            if (diffH > grabDistance)
+            {
+                Grab prospectiveNewGrab = Grab.TryGrab((EntityPlayer)entity, null, grabYLowered ? (float?)(grab.grabPos.FullPosition.Y) : null, null);
                 if (prospectiveNewGrab != null)
                 {
                     climbEB.grab = prospectiveNewGrab;
@@ -74,11 +68,10 @@ namespace Verticality.Moves.Climb
                 }
                 else
                 {
-                    if (diffH > grabDistance) pos.Motion.Add(diffVec.Normalize().Scale(diffH - grabDistance).ToVec3f());
-                    if (diffV < 0) pos.Y -= diffV;
+                    if (diffH > grabDistance) pos.Motion.Set(diffVec.Normalize().Scale(diffH - grabDistance).ToVec3f());
                 }
             }
-            pos.Motion.Y = -walkVectorRelativeToGrabFace.X * 1.5f;
+            pos.Motion.Y = -walkVectorRelativeToGrabFace.X * climbSpeed;
         }
 
         public override void Initialize(JsonObject config, Entity entity)
