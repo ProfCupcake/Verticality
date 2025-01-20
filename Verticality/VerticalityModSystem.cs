@@ -2,6 +2,7 @@
 using Verticality.Lib;
 using Verticality.Moves.ChargedJump;
 using Verticality.Moves.Climb;
+using Verticality.Moves.Crawl;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
@@ -42,6 +43,7 @@ namespace Verticality
 
             api.RegisterEntityBehaviorClass("climb", typeof(EntityBehaviorClimb));
             api.RegisterEntityBehaviorClass("chargedjump", typeof(EntityBehaviorChargedJump));
+            api.RegisterEntityBehaviorClass("crawl", typeof(EntityBehaviorCrawl));
 
             Config = new ConfigManager(api, "verticality.json", "verticality");
         }

@@ -16,5 +16,34 @@
     },
     "file": "game:entities/humanoid/player.json",
     "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/client/behaviors/1",
+    "value": {
+      "code": "crawl"
+    },
+    "file": "game:entities/humanoid/player.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/client/animations/-",
+    "value": {
+      "code": "crawl",
+      "animation": "crawl"
+    },
+    "file": "game:entities/humanoid/player.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/client/animations/-",
+    "value": {
+      "code": "crawl-fp",
+      "animation": "crawl-fp"
+    },
+    "file": "game:entities/humanoid/player.json",
+    "side": "Server"
   }
 ]
