@@ -1,1 +1,5 @@
-- fixed config issues (i hope)
+- implemented fancy new raycast-based ledge detection
+- tightened grab arc: it now roughly checks a 45° arc in front of player (i.e. 22.5° each way from centre)
+- grab now drops if the grab location changes (e.g. block removed or rotated)
+- new custom climbing physics! player will no longer drop from distance, instead being pulled back to grab point#
+- changed default climb key to R, since the new physics make sprinting and climbing together more difficult

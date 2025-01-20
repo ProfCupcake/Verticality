@@ -1,7 +1,9 @@
-﻿using Verticality.Lib;
+﻿using System;
+using Verticality.Lib;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.MathTools;
 
 namespace Verticality.Moves.Climb
 {
@@ -31,7 +33,7 @@ namespace Verticality.Moves.Climb
             }
         }
 
-        private Grab grab;
+        public Grab grab;
 
         public bool ClimbKeyDown
         {
@@ -60,24 +62,30 @@ namespace Verticality.Moves.Climb
             {
                 if (grab == null)
                 {
-                    grab = Grab.TryGrab(player);
+                    grab = Grab.TryGrab(player, null, null, (float?)(grabDistance * Math.Max(1, player.Pos.Motion.Length() * 3)));
                 }
                 else
                 {
                     if (grab.CanStillGrab())
                     {
-                        player.Properties.CanClimbAnywhere = true;
+                        //player.Properties.CanClimbAnywhere = true;
+                        if (VerticalityModSystem.ClientConfig.showDebugParticles)
+                        {
+                            Grab.debugParticles.MinPos = grab.grabPos.FullPosition;
+                            Grab.debugParticles.Color = ColorUtil.WhiteArgb;
+                            player.World.SpawnParticles(Grab.debugParticles);
+                        }
                     }
                     else
                     {
                         grab = Grab.TryGrab(player);
-                        if (grab == null) player.Properties.CanClimbAnywhere = false;
+                        //if (grab == null) player.Properties.CanClimbAnywhere = false;
                     }
                 }
             }
             else if (grab != null)
             {
-                player.Properties.CanClimbAnywhere = false;
+                //player.Properties.CanClimbAnywhere = false;
                 grab = null;
             }
         }

@@ -88,13 +88,14 @@ namespace Verticality.Lib
                         api.Logger.Event("[{0}] generating new config", new object[] { NetChannel });
                         _modConfig = new VerticalityModConfig();
                         api.StoreModConfig(_modConfig, ConfigFilename);
-                    }
+                    } else api.Logger.Event("[{0}] config loaded", new object[] { NetChannel });
                     BroadcastConfig();
                     break;
             }
         }
         public void RequestConfig()
         {
+            api.Logger.Event("[{0}] requesting config from server", new object[] { NetChannel });
             capi.Network.GetChannel(NetChannel).SendPacket<NetMessage_Request>(new());
             api.Event.RegisterCallback((float d) => { requestedConfig = false; }, 5000);
         }
@@ -111,6 +112,7 @@ namespace Verticality.Lib
         }
         public void BroadcastConfig()
         {
+            api.Logger.Event("[{0}] broadcasting config to all players", new object[] { NetChannel });
             sapi.Network.GetChannel(NetChannel).BroadcastPacket(modConfig);
         }
 

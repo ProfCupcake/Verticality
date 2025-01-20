@@ -1,51 +1,113 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 using static Verticality.Lib.CollisionUtils;
 
 namespace Verticality.Moves.Climb
 {
     internal class Grab
     {
-        static float minHeight => EntityBehaviorClimb.minHeight;
-        static float maxHeight => EntityBehaviorClimb.maxHeight;
-        static float grabDistance => EntityBehaviorClimb.grabDistance;
-
         private EntityPlayer player;
 
-        private Vec3d preciseGrabPos;
+        public BlockSelection grabPos;
+
+        public double lastY;
 
         // Checks if given player can grab, then either returns the successful Grab or null if not successful
-        public static Grab TryGrab(EntityPlayer entity)
+        public static Grab TryGrab(EntityPlayer entity, float? minHeight, float? maxHeight, float? grabDistance)
         {
-            Vec3d grabLoc = GetGrabLocation(entity);
+            minHeight ??= EntityBehaviorClimb.minHeight;
+            maxHeight ??= (float?)(EntityBehaviorClimb.maxHeight + entity.Pos.Y + entity.LocalEyePos.Y); // TODO: fix how alarmingly inconsistent this is
+            grabDistance ??= EntityBehaviorClimb.grabDistance;
 
-            double relHeightFeet = grabLoc.Y - entity.Pos.Y;
+            BlockSelection grabLoc = GetGrabLocationByRaycast(entity, (float)minHeight, (float)maxHeight, (float)grabDistance);
+
+            if (grabLoc == null) return null;
+
+            double relHeightFeet = grabLoc.FullPosition.Y - entity.Pos.Y;
             double relHeightEyes = relHeightFeet - entity.LocalEyePos.Y;
-
+            
             if (relHeightFeet > minHeight && relHeightEyes < maxHeight)
             {
                 return new Grab()
                 {
                     player = entity,
-                    preciseGrabPos = grabLoc
+                    grabPos = grabLoc,
+                    lastY = entity.Pos.Y
                 };
+                //debugParticles.Color = ColorUtil.ColorFromRgba(0, 255, 0, 255);
+            }/* else
+            {
+                debugParticles.Color = ColorUtil.ColorFromRgba(0, 0, 255, 255);
             }
+            
+            debugParticles.MinPos = grabLoc;
+            Vec3d towardsPlayer = grabLoc.SubCopy(entity.Pos.XYZ.AddCopy(0, minHeight, 0)).Normalize();
+            debugParticles.MinVelocity = towardsPlayer.ToVec3f() * -2;
+            debugParticles.AddVelocity = Vec3f.Zero;
 
+            entity.World.SpawnParticles(debugParticles);
+
+            debugParticles.MinVelocity = new Vec3f(-0.1f, -0.1f, -0.1f);
+            debugParticles.AddVelocity = new Vec3f(0.2f, 0.2f, 0.2f);
+
+            entity.World.SpawnParticles(debugParticles);
+            */
             return null;
+        }
+
+        public static Grab TryGrab(EntityPlayer entity)
+        {
+            return TryGrab(entity, null, null, null);
         }
 
         // Checks and returns whether player should still be holding onto this grab point
         public bool CanStillGrab()
         {
-            double relHeightFeet = preciseGrabPos.Y - player.Pos.Y;
+            double relHeightFeet = grabPos.FullPosition.Y - player.Pos.Y;
             double relHeightEyes = relHeightFeet - player.LocalEyePos.Y;
 
-            if (relHeightFeet >= 0 && relHeightEyes < maxHeight)
-                return player.Pos.HorDistanceTo(preciseGrabPos) <= grabDistance;
+            if (relHeightFeet < 0/* || relHeightEyes > maxHeight*/) return false;
 
-            return false;
+            //if (player.Pos.HorDistanceTo(grabPos.FullPosition) > grabDistance) return false;
+
+            if (!GapCheck(grabPos.FullPosition, player.World.InteresectionTester)) return false;
+
+            return true;
+        }
+
+        public static bool GapCheck(Vec3d pos, AABBIntersectionTest aabb)
+        {
+            BlockSelection _ = null;
+            return GapCheck(pos, aabb, ref _);
+        }
+
+        public static bool GapCheck(Vec3d pos, AABBIntersectionTest aabb, ref BlockSelection outBS)
+        {
+            Ray ray = Ray.FromPositions(
+                pos.AddCopy(0, 1 / 64f, 0),
+                pos.SubCopy(0, 1 / 128f, 0)
+                );
+            aabb.LoadRayAndPos(ray);
+            BlockSelection bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+            if (bs == null) return false;
+
+            outBS = bs.Clone();
+            outBS.Block ??= bs.Block;
+
+            ray = Ray.FromPositions(
+                pos.Clone(),
+                pos.AddCopy(0, 1 / 64f, 0)
+                );
+            aabb.LoadRayAndPos(ray);
+            bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+            if (bs != null) return false;
+
+            return true;
         }
 
         public static SimpleParticleProperties debugParticles = new()
@@ -60,92 +122,85 @@ namespace Verticality.Moves.Climb
             Color = ColorUtil.WhiteArgb,
             AddPos = Vec3d.Zero,
             LifeLength = 0.1f,
-            ParticleModel = EnumParticleModel.Cube
+            ParticleModel = EnumParticleModel.Cube,
+            LightEmission = ColorUtil.WhiteArgb
         };
 
-        // Find closest collision, if any, within a region of blocks in front of player
-        // if collision found, crawl up surface until a gap is found or max height reached
-        // return location of gap, if any
-        public static Vec3d GetGrabLocation(EntityPlayer entity)
+        public static BlockSelection GetGrabLocationByRaycast(EntityPlayer player, float minHeight, float maxHeight, float grabDistance)
         {
-            float yaw = entity.BodyYaw - GameMath.PIHALF;
-
-            List<BlockPos> posList = new();
-
-            /*
-            debugParticles.Color = ColorUtil.ColorFromRgba(255, 0, 0, 255);
-            //*/
-
-            for (int y_offset = 0; y_offset <= 2; y_offset++)
+            float[] heightOffsets = new float[] { 
+                minHeight, 
+                (float)player.LocalEyePos.Y * 0.8f
+            };
+            float[] yawOffsets = new float[]
             {
-                for (float yaw_offset = -GameMath.PIHALF / 2; yaw_offset <= GameMath.PIHALF / 2; yaw_offset += GameMath.PIHALF / 2)
-                {
-                    float x_offset = MathF.Cos(yaw + yaw_offset);
-                    float z_offset = -MathF.Sin(yaw + yaw_offset);
-                    BlockPos newPos = entity.Pos.XYZ.AddCopy(x_offset, minHeight + y_offset, z_offset).AsBlockPos;
-                    posList.Add(newPos);
+                0,
+                0.12f, -0.12f,
+                0.25f, -0.25f
+            };
 
-                    /*
-                    debugParticles.MinPos = newPos.ToVec3d().AddCopy(0.5,0.5,0.5);
-                    entity.World.SpawnParticles(debugParticles);
-                    //*/
+            foreach (float heightOffset in heightOffsets)
+            {
+                foreach (float yawOffset in yawOffsets)
+                {
+                    BlockSelection outPos = DoGrabRaycast(player, yawOffset * GameMath.PIHALF, heightOffset, maxHeight, grabDistance);
+                    if (outPos != null) return outPos;
                 }
             }
+            return null;
+        }
 
-            IBlockAccessor blockAccessor = entity.World.BlockAccessor;
-            Cuboidf[] collBoxes = Array.Empty<Cuboidf>();
-            foreach (BlockPos pos in posList)
+        public static BlockSelection DoGrabRaycast(EntityPlayer player, float yawOffset, float heightOffset, float maxHeight, float grabDistance)
+        {
+            ICoreClientAPI capi = player.Api as ICoreClientAPI;
+
+            Ray ray = Ray.FromAngles(player.Pos.XYZ.AddCopy(0, heightOffset, 0), 0, (player.Pos.Yaw - GameMath.PI) + yawOffset, grabDistance);
+            AABBIntersectionTest aabb = player.World.InteresectionTester;
+            aabb.LoadRayAndPos(ray);
+            BlockSelection bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+            if (bs != null)
             {
-                Cuboidf[] inCollBoxes = blockAccessor.GetBlock(pos).GetCollisionBoxes(blockAccessor, pos);
-                if (inCollBoxes != null && inCollBoxes.Length > 0)
+                BlockFacing face = bs.Face;
+                bs.HitPosition.Sub(bs.Face.Normald * 1 / 128f);
+                Vec3d bottom = bs.FullPosition.Clone();
+                ray = Ray.FromPositions(
+                    new(bs.FullPosition.X, maxHeight, bs.FullPosition.Z),
+                    bottom
+                    );
+                aabb.LoadRayAndPos(ray);
+                bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+                while (bs != null && ray.Length > 1/128f)
                 {
-                    Cuboidf[] inCollBoxes_offset = new Cuboidf[inCollBoxes.Length];
-                    for (int c = 0; c < inCollBoxes.Length; c++)
+                    if (GapCheck(bs.FullPosition, aabb))
                     {
-                        inCollBoxes_offset[c] = inCollBoxes[c].OffsetCopy(pos);
+                        bs.Face = face;
+                        //((ICoreClientAPI)player.Api).ShowChatMessage("Grab! Face: " + face.ToString());
+                        return bs;
                     }
-                    collBoxes = CombineBoxArrays(collBoxes, inCollBoxes_offset);
+
+                    ray = Ray.FromPositions(
+                        bs.FullPosition.SubCopy(0, 1/128f, 0),
+                        bottom
+                        );
+                    aabb.LoadRayAndPos(ray);
+                    bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
                 }
             }
 
-            if (collBoxes.Length == 0) return Vec3d.Zero;
+            return null;
+        }
 
-            string arrString = "\n";
-            foreach (Cuboidf c in collBoxes)
+        public bool TrySlide(double slide)
+        {
+            Vec3d newPos = grabPos.FullPosition.AddCopy(grabPos.Face.GetHorizontalRotated(90).Normald.Clone().Scale(slide));
+            BlockSelection bs = null;
+            if (GapCheck(newPos, player.World.InteresectionTester, ref bs))
             {
-                arrString += c.ToString() + "\n";
+                bs.Face = grabPos.Face;
+                grabPos = bs;
+                return true;
             }
-
-
-            Vec3d collPos = GetClosestPoint(collBoxes, entity.Pos.XYZ.AddCopy(0, minHeight, 0));
-
-            Vec3d topPos = ToTheTop(collBoxes, collPos);
-
-            /*
-            if (collPos.DistanceTo(entity.Pos.XYZ) < 2)
-            {
-                debugParticles.MinPos = collPos;
-                debugParticles.Color = ColorUtil.WhiteArgb;
-                entity.World.SpawnParticles(debugParticles);
-                
-                debugParticles.MinPos = entity.Pos.XYZ.AddCopy(0, min, 0);
-                debugParticles.Color = ColorUtil.BlackArgb;
-                entity.World.SpawnParticles(debugParticles);
-
-                debugParticles.MinPos = topPos;
-                double relHeight = topPos.Y - entity.Pos.Y;
-                if (relHeight > min && relHeight < max)
-                {
-                    debugParticles.Color = ColorUtil.ColorFromRgba(0, 255, 0, 255);
-                }
-                else
-                {
-                    debugParticles.Color = ColorUtil.ColorFromRgba(0, 0, 255, 255);
-                }
-                entity.World.SpawnParticles(debugParticles);
-            } //*/
-
-            return topPos;
+            return false;
         }
     }
 }
