@@ -31,7 +31,10 @@
     "path": "/client/animations/-",
     "value": {
       "code": "crawl",
-      "animation": "crawl"
+      "animation": "crawl",
+      "blendmode": "addaverage",
+      "mulwithwalkspeed": true,
+      "weight": 100
     },
     "file": "game:entities/humanoid/player.json",
     "side": "Server"
@@ -40,8 +43,11 @@
     "op": "add",
     "path": "/client/animations/-",
     "value": {
-      "code": "crawl-fp",
-      "animation": "crawl-fp"
+      "code": "crawl-idle",
+      "animation": "crawl-idle",
+      "blendmode": "addaverage",
+      "mulwithwalkspeed": true,
+      "weight": 100,
     },
     "file": "game:entities/humanoid/player.json",
     "side": "Server"

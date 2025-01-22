@@ -50,6 +50,19 @@ namespace Verticality.Moves.Crawl
             {
                 DidKeyPress = false;
             }
+
+            if (IsCrawling)
+            {
+                if (((EntityPlayer)entity).Controls.TriesToMove)
+                {
+                    if (entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StopAnimation("crawl-idle");
+                    if (!entity.AnimManager.IsAnimationActive("crawl")) entity.StartAnimation("crawl");
+                } else
+                {
+                    if (entity.AnimManager.IsAnimationActive("crawl")) entity.StopAnimation("crawl");
+                    if (!entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StartAnimation("crawl-idle");
+                }
+            }
         }
 
         public override string PropertyName()
@@ -64,7 +77,7 @@ namespace Verticality.Moves.Crawl
                 entity.Properties.EyeHeight -= 1;
                 entity.Properties.CollisionBoxSize.Y -= 1f;
 
-                entity.StartAnimation("crawl");
+                entity.Stats.Set("walkspeed", "crawlSpeed", -0.5f, true);
 
                 IsCrawling = true;
 
@@ -81,6 +94,9 @@ namespace Verticality.Moves.Crawl
                 entity.Properties.EyeHeight += 1;
                 entity.Properties.CollisionBoxSize.Y += 1f;
 
+                entity.Stats.Remove("walkspeed", "crawlSpeed");
+
+                entity.StopAnimation("crawl-idle");
                 entity.StopAnimation("crawl");
 
                 IsCrawling = false;
