@@ -33,12 +33,12 @@ namespace Verticality.Moves.Crawl
                 {
                     if (IsCrawling)
                     {
-                        capi.ShowChatMessage("trying to stand");
+                        //capi.ShowChatMessage("trying to stand");
                         TryStand();
                     }
                     else
                     {
-                        capi.ShowChatMessage("trying to crawl");
+                        //capi.ShowChatMessage("trying to crawl");
                         TryCrawl();
                     }
                     DidKeyPress = true;
