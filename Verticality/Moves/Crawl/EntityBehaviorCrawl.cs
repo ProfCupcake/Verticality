@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vintagestory.API.Client;
+﻿using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 
 namespace Verticality.Moves.Crawl
 {
@@ -17,7 +13,7 @@ namespace Verticality.Moves.Crawl
         bool DidKeyPress;
         bool IsCrawling;
 
-        public EntityBehaviorCrawl(Entity entity) : base(entity) {}
+        public EntityBehaviorCrawl(Entity entity) : base(entity) { }
 
         public override void Initialize(EntityProperties properties, JsonObject attributes)
         {
@@ -39,14 +35,16 @@ namespace Verticality.Moves.Crawl
                     {
                         capi.ShowChatMessage("trying to stand");
                         TryStand();
-                    } else
+                    }
+                    else
                     {
                         capi.ShowChatMessage("trying to crawl");
                         TryCrawl();
                     }
                     DidKeyPress = true;
                 }
-            } else
+            }
+            else
             {
                 DidKeyPress = false;
             }
@@ -57,7 +55,8 @@ namespace Verticality.Moves.Crawl
                 {
                     if (entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StopAnimation("crawl-idle");
                     if (!entity.AnimManager.IsAnimationActive("crawl")) entity.StartAnimation("crawl");
-                } else
+                }
+                else
                 {
                     if (entity.AnimManager.IsAnimationActive("crawl")) entity.StopAnimation("crawl");
                     if (!entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StartAnimation("crawl-idle");
@@ -77,7 +76,7 @@ namespace Verticality.Moves.Crawl
                 entity.Properties.EyeHeight -= 1;
                 entity.Properties.CollisionBoxSize.Y -= 1f;
 
-                entity.Stats.Set("walkspeed", "crawlSpeed", -0.5f, true);
+                entity.Stats.Set("walkspeed", "crawlSpeed", -0.66f, true);
 
                 IsCrawling = true;
 
@@ -91,6 +90,14 @@ namespace Verticality.Moves.Crawl
         {
             if (IsCrawling)
             {
+                Cuboidf collBox = entity.World.GetEntityType("game:player").SpawnCollisionBox.Clone();
+                collBox.Y2 -= 0.4f; // adjust to sneak height
+
+                if (entity.World.CollisionTester.IsColliding(entity.World.BlockAccessor, collBox, entity.Pos.XYZ, false))
+                {
+                    return false;
+                }
+
                 entity.Properties.EyeHeight += 1;
                 entity.Properties.CollisionBoxSize.Y += 1f;
 

@@ -47,7 +47,7 @@
       "animation": "crawl-idle",
       "blendmode": "addaverage",
       "mulwithwalkspeed": true,
-      "weight": 100,
+      "weight": 100
     },
     "file": "game:entities/humanoid/player.json",
     "side": "Server"
