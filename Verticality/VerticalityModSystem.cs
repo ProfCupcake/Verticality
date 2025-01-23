@@ -63,5 +63,7 @@ namespace Verticality
 
             capi.Input.RegisterHotKey("climb", "Climb", GlKeys.R, HotkeyType.MovementControls);
         }
+
+        
     }
 }

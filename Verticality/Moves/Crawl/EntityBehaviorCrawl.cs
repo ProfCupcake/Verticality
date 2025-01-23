@@ -49,6 +49,10 @@ namespace Verticality.Moves.Crawl
                 DidKeyPress = false;
             }
 
+            if (!IsCrawling)
+                if (StandCollisionCheck())
+                    TryCrawl();
+
             if (IsCrawling)
             {
                 if (((EntityPlayer)entity).Controls.TriesToMove)
@@ -90,13 +94,7 @@ namespace Verticality.Moves.Crawl
         {
             if (IsCrawling)
             {
-                Cuboidf collBox = entity.World.GetEntityType("game:player").SpawnCollisionBox.Clone();
-                collBox.Y2 -= 0.4f; // adjust to sneak height
-
-                if (entity.World.CollisionTester.IsColliding(entity.World.BlockAccessor, collBox, entity.Pos.XYZ, false))
-                {
-                    return false;
-                }
+                if (StandCollisionCheck()) return false;
 
                 entity.Properties.EyeHeight += 1;
                 entity.Properties.CollisionBoxSize.Y += 1f;
@@ -111,6 +109,14 @@ namespace Verticality.Moves.Crawl
                 return true;
             }
             return false;
+        }
+
+        public bool StandCollisionCheck()
+        {
+            Cuboidf collBox = entity.World.GetEntityType("game:player").SpawnCollisionBox.Clone();
+            collBox.Y2 -= 0.4f; // adjust to sneak height
+
+            return entity.World.CollisionTester.IsColliding(entity.World.BlockAccessor, collBox, entity.Pos.XYZ, false);
         }
     }
 }
