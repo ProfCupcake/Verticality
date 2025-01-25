@@ -65,6 +65,9 @@ namespace Verticality.Moves.Crawl
 
             if (IsCrawling)
             {
+                entity.Stats.Set("walkspeed", "crawlSpeed", -0.66f, true);
+                entity.Stats.Set("jumpHeightMul", "crawlJump", -10f, true);
+
                 if (((EntityPlayer)entity).Controls.TriesToMove)
                 {
                     if (entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StopAnimation("crawl-idle");
@@ -90,8 +93,6 @@ namespace Verticality.Moves.Crawl
                 entity.Properties.EyeHeight -= 1;
                 entity.Properties.CollisionBoxSize.Y -= 1f;
 
-                entity.Stats.Set("walkspeed", "crawlSpeed", -0.66f, true);
-
                 IsCrawling = true;
 
                 return true;
@@ -110,6 +111,7 @@ namespace Verticality.Moves.Crawl
                 entity.Properties.CollisionBoxSize.Y += 1f;
 
                 entity.Stats.Remove("walkspeed", "crawlSpeed");
+                entity.Stats.Remove("jumpHeightMul", "crawlJump");
 
                 entity.StopAnimation("crawl-idle");
                 entity.StopAnimation("crawl");
