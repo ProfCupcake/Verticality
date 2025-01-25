@@ -1,6 +1,9 @@
-﻿using Vintagestory.API.Client;
+﻿using System;
+using Verticality.Lib;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
@@ -10,8 +13,20 @@ namespace Verticality.Moves.Crawl
     {
         ICoreClientAPI capi;
 
+        float baseJumpForce; 
+
         bool DidKeyPress;
-        bool IsCrawling;
+        bool IsCrawling
+        {
+            set
+            {
+                entity.WatchedAttributes.SetBool("isCrawling", value);
+            }
+            get
+            {
+                return entity.WatchedAttributes.GetBool("isCrawling");
+            }
+        }
 
         public EntityBehaviorCrawl(Entity entity) : base(entity) { }
 
@@ -27,7 +42,7 @@ namespace Verticality.Moves.Crawl
 
         public override void OnGameTick(float dt)
         {
-            if (capi.Input.IsHotKeyPressed("climb") && capi.Input.IsHotKeyPressed("sneak"))
+            if (CrawlInputPressed())
             {
                 if (!DidKeyPress)
                 {
@@ -49,12 +64,17 @@ namespace Verticality.Moves.Crawl
                 DidKeyPress = false;
             }
 
-            if (!IsCrawling)
-                if (StandCollisionCheck())
-                    TryCrawl();
+            //if (!IsCrawling)
+              //  if (StandCollisionCheck())
+                //    TryCrawl();
 
             if (IsCrawling)
             {
+                entity.Stats.Set("walkspeed", "crawlSpeed", VerticalityModSystem.Config.modConfig.crawlSpeedReduction, true);
+                entity.Stats.Set("jumpHeightMul", "crawlJump", 0f, true);
+
+                GlobalConstants.BaseJumpForce = 0f; // this shouldn't be necessary, but the above doesn't fukken work for some reason >:[
+
                 if (((EntityPlayer)entity).Controls.TriesToMove)
                 {
                     if (entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StopAnimation("crawl-idle");
@@ -66,6 +86,17 @@ namespace Verticality.Moves.Crawl
                     if (!entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StartAnimation("crawl-idle");
                 }
             }
+        }
+
+        private bool CrawlInputPressed()
+        {
+            if (VerticalityModSystem.ClientConfig.combinationCrawlKeys)
+                if (capi.Input.IsHotKeyPressed("climb") && capi.Input.IsHotKeyPressed("sneak"))
+                    return true;
+            if (VerticalityModSystem.ClientConfig.dedicatedCrawlKey)
+                if (capi.Input.IsHotKeyPressed("crawl"))
+                    return true;
+            return false;
         }
 
         public override string PropertyName()
@@ -80,7 +111,7 @@ namespace Verticality.Moves.Crawl
                 entity.Properties.EyeHeight -= 1;
                 entity.Properties.CollisionBoxSize.Y -= 1f;
 
-                entity.Stats.Set("walkspeed", "crawlSpeed", -0.66f, true);
+                baseJumpForce = GlobalConstants.BaseJumpForce;
 
                 IsCrawling = true;
 
@@ -99,7 +130,10 @@ namespace Verticality.Moves.Crawl
                 entity.Properties.EyeHeight += 1;
                 entity.Properties.CollisionBoxSize.Y += 1f;
 
+                GlobalConstants.BaseJumpForce = baseJumpForce;
+
                 entity.Stats.Remove("walkspeed", "crawlSpeed");
+                entity.Stats.Remove("jumpHeightMul", "crawlJump");
 
                 entity.StopAnimation("crawl-idle");
                 entity.StopAnimation("crawl");
