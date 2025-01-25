@@ -62,7 +62,7 @@ namespace Verticality.Moves.Climb
             {
                 if (grab == null)
                 {
-                    grab = Grab.TryGrab(player, null, null, (float?)(grabDistance * Math.Max(1, player.Pos.Motion.Length() * 3)));
+                    grab = Grab.TryGrab(player, null, null, (float?)(grabDistance * 1.5));
                 }
                 else
                 {
