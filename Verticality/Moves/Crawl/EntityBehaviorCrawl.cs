@@ -11,7 +11,17 @@ namespace Verticality.Moves.Crawl
         ICoreClientAPI capi;
 
         bool DidKeyPress;
-        bool IsCrawling;
+        bool IsCrawling
+        {
+            set
+            {
+                entity.WatchedAttributes.SetBool("isCrawling", value);
+            }
+            get
+            {
+                return entity.WatchedAttributes.GetBool("isCrawling");
+            }
+        }
 
         public EntityBehaviorCrawl(Entity entity) : base(entity) { }
 
@@ -49,9 +59,9 @@ namespace Verticality.Moves.Crawl
                 DidKeyPress = false;
             }
 
-            if (!IsCrawling)
-                if (StandCollisionCheck())
-                    TryCrawl();
+            //if (!IsCrawling)
+              //  if (StandCollisionCheck())
+                //    TryCrawl();
 
             if (IsCrawling)
             {
