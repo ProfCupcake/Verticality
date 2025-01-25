@@ -11,10 +11,15 @@ namespace Verticality
         public float climbSpeed = 1.5f;
         public float chargedJumpChargeTime = 0.5f;
         public float chargedJumpAddForce = 1.9f;
+        public float crawlSpeedReduction = -0.8f;
     }
 
     public class VerticalityClientModConfig
     {
         public bool showDebugParticles = false;
+        
+        public bool dedicatedCrawlKey = false;
+        public bool combinationCrawlKeys = true;
+
     }
 }

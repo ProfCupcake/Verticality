@@ -62,6 +62,7 @@ namespace Verticality
             } else capi.Logger.Event("[verticality] client config loaded");
 
             capi.Input.RegisterHotKey("climb", "Climb", GlKeys.R, HotkeyType.MovementControls);
+            capi.Input.RegisterHotKey("crawl", "Crawl (Single-Key Option)", GlKeys.Z, HotkeyType.MovementControls);
         }
 
         

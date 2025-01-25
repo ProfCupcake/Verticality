@@ -1,6 +1,9 @@
-﻿using Vintagestory.API.Client;
+﻿using System;
+using Verticality.Lib;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
@@ -9,6 +12,8 @@ namespace Verticality.Moves.Crawl
     public class EntityBehaviorCrawl : EntityBehavior
     {
         ICoreClientAPI capi;
+
+        float baseJumpForce; 
 
         bool DidKeyPress;
         bool IsCrawling
@@ -37,7 +42,7 @@ namespace Verticality.Moves.Crawl
 
         public override void OnGameTick(float dt)
         {
-            if (capi.Input.IsHotKeyPressed("climb") && capi.Input.IsHotKeyPressed("sneak"))
+            if (CrawlInputPressed())
             {
                 if (!DidKeyPress)
                 {
@@ -65,8 +70,10 @@ namespace Verticality.Moves.Crawl
 
             if (IsCrawling)
             {
-                entity.Stats.Set("walkspeed", "crawlSpeed", -0.66f, true);
-                entity.Stats.Set("jumpHeightMul", "crawlJump", -10f, true);
+                entity.Stats.Set("walkspeed", "crawlSpeed", VerticalityModSystem.Config.modConfig.crawlSpeedReduction, true);
+                entity.Stats.Set("jumpHeightMul", "crawlJump", 0f, true);
+
+                GlobalConstants.BaseJumpForce = 0f; // this shouldn't be necessary, but the above doesn't fukken work for some reason >:[
 
                 if (((EntityPlayer)entity).Controls.TriesToMove)
                 {
@@ -81,6 +88,17 @@ namespace Verticality.Moves.Crawl
             }
         }
 
+        private bool CrawlInputPressed()
+        {
+            if (VerticalityModSystem.ClientConfig.combinationCrawlKeys)
+                if (capi.Input.IsHotKeyPressed("climb") && capi.Input.IsHotKeyPressed("sneak"))
+                    return true;
+            if (VerticalityModSystem.ClientConfig.dedicatedCrawlKey)
+                if (capi.Input.IsHotKeyPressed("crawl"))
+                    return true;
+            return false;
+        }
+
         public override string PropertyName()
         {
             return "crawl";
@@ -92,6 +110,8 @@ namespace Verticality.Moves.Crawl
             {
                 entity.Properties.EyeHeight -= 1;
                 entity.Properties.CollisionBoxSize.Y -= 1f;
+
+                baseJumpForce = GlobalConstants.BaseJumpForce;
 
                 IsCrawling = true;
 
@@ -109,6 +129,8 @@ namespace Verticality.Moves.Crawl
 
                 entity.Properties.EyeHeight += 1;
                 entity.Properties.CollisionBoxSize.Y += 1f;
+
+                GlobalConstants.BaseJumpForce = baseJumpForce;
 
                 entity.Stats.Remove("walkspeed", "crawlSpeed");
                 entity.Stats.Remove("jumpHeightMul", "crawlJump");
