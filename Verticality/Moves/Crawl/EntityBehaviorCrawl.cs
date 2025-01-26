@@ -16,17 +16,7 @@ namespace Verticality.Moves.Crawl
         float baseJumpForce; 
 
         bool DidKeyPress;
-        bool IsCrawling
-        {
-            set
-            {
-                entity.WatchedAttributes.SetBool("isCrawling", value);
-            }
-            get
-            {
-                return entity.WatchedAttributes.GetBool("isCrawling");
-            }
-        }
+        bool IsCrawling;
 
         public EntityBehaviorCrawl(Entity entity) : base(entity) { }
 
