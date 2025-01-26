@@ -13,8 +13,8 @@ namespace Verticality.Moves.Crawl
     {
         ICoreClientAPI capi;
 
-        float baseJumpForce; 
-
+        EntityProperties baseProperties;
+        
         bool DidKeyPress;
         bool IsCrawling;
 
@@ -23,6 +23,8 @@ namespace Verticality.Moves.Crawl
         public override void Initialize(EntityProperties properties, JsonObject attributes)
         {
             base.Initialize(properties, attributes);
+
+            baseProperties = entity.World.GetEntityType(GlobalConstants.EntityPlayerTypeCode);
 
             if (entity.Api.Side == EnumAppSide.Client)
             {
@@ -63,8 +65,6 @@ namespace Verticality.Moves.Crawl
                 entity.Stats.Set("walkspeed", "crawlSpeed", VerticalityModSystem.Config.modConfig.crawlSpeedReduction, true);
                 entity.Stats.Set("jumpHeightMul", "crawlJump", 0f, true);
 
-                GlobalConstants.BaseJumpForce = 0f; // this shouldn't be necessary, but the above doesn't fukken work for some reason >:[
-
                 if (((EntityPlayer)entity).Controls.TriesToMove)
                 {
                     if (entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StopAnimation("crawl-idle");
@@ -98,10 +98,10 @@ namespace Verticality.Moves.Crawl
         {
             if (!IsCrawling)
             {
-                entity.Properties.EyeHeight -= 1;
-                entity.Properties.CollisionBoxSize.Y -= 1f;
+                entity.Properties.EyeHeight = baseProperties.EyeHeight - 1;
+                entity.Properties.CollisionBoxSize.Y = baseProperties.CollisionBoxSize.Y - 1;
 
-                baseJumpForce = GlobalConstants.BaseJumpForce;
+                GlobalConstants.BaseJumpForce = 0f; // this shouldn't be necessary, but the stat change doesn't fukken work for some reason >:[
 
                 IsCrawling = true;
 
@@ -117,10 +117,10 @@ namespace Verticality.Moves.Crawl
             {
                 if (StandCollisionCheck()) return false;
 
-                entity.Properties.EyeHeight += 1;
-                entity.Properties.CollisionBoxSize.Y += 1f;
+                entity.Properties.EyeHeight = baseProperties.EyeHeight;
+                entity.Properties.CollisionBoxSize.Y = baseProperties.CollisionBoxSize.Y;
 
-                GlobalConstants.BaseJumpForce = baseJumpForce;
+                GlobalConstants.BaseJumpForce = 8.2f;
 
                 entity.Stats.Remove("walkspeed", "crawlSpeed");
                 entity.Stats.Remove("jumpHeightMul", "crawlJump");
@@ -137,7 +137,7 @@ namespace Verticality.Moves.Crawl
 
         public bool StandCollisionCheck()
         {
-            Cuboidf collBox = entity.World.GetEntityType("game:player").SpawnCollisionBox.Clone();
+            Cuboidf collBox = baseProperties.SpawnCollisionBox.Clone();
             collBox.Y2 -= 0.4f; // adjust to sneak height
 
             return entity.World.CollisionTester.IsColliding(entity.World.BlockAccessor, collBox, entity.Pos.XYZ, false);
