@@ -1,1 +1,2 @@
-- New move: crawling!
+- Fix for crawl animations in multiplayer
+- Also implements saving/loading of crawl state
