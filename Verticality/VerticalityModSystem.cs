@@ -1,10 +1,13 @@
 ﻿using HarmonyLib;
+using System;
 using Verticality.Lib;
 using Verticality.Moves.ChargedJump;
 using Verticality.Moves.Climb;
 using Verticality.Moves.Crawl;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
+using Vintagestory.API.Server;
 
 namespace Verticality
 {
@@ -12,6 +15,7 @@ namespace Verticality
     {
         public const string patchName = "com.profcupcake.verticality";
         public const string clientConfigFilename = "verticality-client.json";
+        public const string crawlNetChannel = "verticality:crawl";
 
         Harmony harmony;
         public static ConfigManager Config
@@ -35,6 +39,8 @@ namespace Verticality
         {
             base.Dispose();
 
+            GlobalConstants.BaseJumpForce = 8.2f;
+
             harmony.UnpatchAll(patchName);
         }
         public override void Start(ICoreAPI api)
@@ -46,6 +52,18 @@ namespace Verticality
             api.RegisterEntityBehaviorClass("crawl", typeof(EntityBehaviorCrawl));
 
             Config = new ConfigManager(api, "verticality.json", "verticality");
+
+            api.Network.RegisterChannel(crawlNetChannel)
+                .RegisterMessageType<IsCrawlingPacket>();
+
+            if (api.Side == EnumAppSide.Server)
+            {
+                ((ICoreServerAPI)api).Network.GetChannel(crawlNetChannel)
+                    .SetMessageHandler<IsCrawlingPacket>((IServerPlayer player, IsCrawlingPacket packet) =>
+                    {
+                        player.Entity.GetBehavior<EntityBehaviorCrawl>().IsCrawling = packet.isCrawling;
+                    });
+            }
         }
 
         public override void StartClientSide(ICoreClientAPI capi)

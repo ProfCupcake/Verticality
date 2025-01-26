@@ -1,13 +1,13 @@
 {
-    "type": "code",
-    "modid": "Verticality",
-    "name": "Verticality",
-    "authors": [
-        "Professor Cupcake"
-    ],
-    "description": "Climbing! Also jumping! And crawling!",
-  "version": "0.0.10",
-    "dependencies": {
-        "game": "1.20.0-rc.8"
-    }
+  "type": "code",
+  "modid": "Verticality",
+  "name": "Verticality",
+  "authors": [
+    "Professor Cupcake"
+  ],
+  "description": "Climbing! Also jumping! And crawling!",
+  "version": "0.0.11",
+  "dependencies": {
+    "game": "1.20.0-rc.8"
+  }
 }
