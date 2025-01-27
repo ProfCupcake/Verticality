@@ -27,7 +27,8 @@ namespace Verticality.Moves.Crawl
                 if (entity.Api.Side == EnumAppSide.Server)
                 {
                     entity.WatchedAttributes.SetBool("Verticality:IsCrawling", value);
-                } else if (entity.Api.Side == EnumAppSide.Client)
+                }
+                else if (entity.Api.Side == EnumAppSide.Client)
                 {
                     capi.Network.GetChannel(VerticalityModSystem.crawlNetChannel)
                         .SendPacket<IsCrawlingPacket>(new() { isCrawling = value });
@@ -49,7 +50,8 @@ namespace Verticality.Moves.Crawl
             if (entity.Api.Side == EnumAppSide.Client)
             {
                 capi = entity.Api as ICoreClientAPI;
-            } else if (entity.Api.Side == EnumAppSide.Server)
+            }
+            else if (entity.Api.Side == EnumAppSide.Server)
             {
                 sapi = entity.Api as ICoreServerAPI;
             }
@@ -57,83 +59,91 @@ namespace Verticality.Moves.Crawl
 
         public override void OnGameTick(float dt)
         {
-            if (entity.Api.Side == EnumAppSide.Client)
+
+            if (IsLocalPlayer())
             {
-                if (entity == capi.World.Player.Entity)
+                if (CrawlInputPressed())
                 {
-                    if (CrawlInputPressed())
+                    if (!DidKeyPress)
                     {
-                        if (!DidKeyPress)
+                        if (IsCrawling)
                         {
-                            if (IsCrawling)
-                            {
-                                //capi.ShowChatMessage("trying to stand");
-                                TryStand();
-                            }
-                            else
-                            {
-                                //capi.ShowChatMessage("trying to crawl");
-                                TryCrawl();
-                            }
-                            DidKeyPress = true;
+                            //capi.ShowChatMessage("trying to stand");
+                            TryStand();
                         }
-                    }
-                    else
-                    {
-                        DidKeyPress = false;
-                    }
-                }
-
-
-                //if (!IsCrawling)
-                //  if (StandCollisionCheck())
-                //    TryCrawl();
-
-                if (IsCrawling != IsClientCrawling)
-                {
-                    if (IsCrawling)
-                    {
-                        entity.Properties.EyeHeight = baseProperties.EyeHeight - 1;
-                        entity.Properties.CollisionBoxSize.Y = baseProperties.CollisionBoxSize.Y - 1;
-
-                        GlobalConstants.BaseJumpForce = 0f; // this shouldn't be necessary, but the stat change doesn't fukken work for some reason >:[
-
-                        IsClientCrawling = true;
-                    } else
-                    {
-                        entity.Properties.EyeHeight = baseProperties.EyeHeight;
-                        entity.Properties.CollisionBoxSize.Y = baseProperties.CollisionBoxSize.Y;
-
-                        GlobalConstants.BaseJumpForce = 8.2f;
-
-                        entity.Stats.Remove("walkspeed", "crawlSpeed");
-                        entity.Stats.Remove("jumpHeightMul", "crawlJump");
-
-                        entity.StopAnimation("crawl-idle");
-                        entity.StopAnimation("crawl");
-
-                        IsClientCrawling = false;
+                        else
+                        {
+                            //capi.ShowChatMessage("trying to crawl");
+                            TryCrawl();
+                        }
+                        DidKeyPress = true;
                     }
                 }
-
-
-                if (IsCrawling)
+                else
                 {
-                    entity.Stats.Set("walkspeed", "crawlSpeed", VerticalityModSystem.Config.modConfig.crawlSpeedReduction, true);
-                    entity.Stats.Set("jumpHeightMul", "crawlJump", 0f, true);
-
-                    if (((EntityPlayer)entity).Controls.TriesToMove)
-                    {
-                        if (entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StopAnimation("crawl-idle");
-                        if (!entity.AnimManager.IsAnimationActive("crawl")) entity.StartAnimation("crawl");
-                    }
-                    else
-                    {
-                        if (entity.AnimManager.IsAnimationActive("crawl")) entity.StopAnimation("crawl");
-                        if (!entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StartAnimation("crawl-idle");
-                    }
+                    DidKeyPress = false;
                 }
             }
+
+
+            //if (!IsCrawling)
+            //  if (StandCollisionCheck())
+            //    TryCrawl();
+
+            if (IsCrawling != IsClientCrawling)
+            {
+                if (IsCrawling)
+                {
+                    entity.Properties.EyeHeight = baseProperties.EyeHeight - 1;
+                    entity.Properties.CollisionBoxSize.Y = baseProperties.CollisionBoxSize.Y - 1;
+
+                    if (IsLocalPlayer()) GlobalConstants.BaseJumpForce = 0f; // this shouldn't be necessary, but the stat change doesn't fukken work for some reason >:[
+
+                    IsClientCrawling = true;
+                }
+                else
+                {
+                    entity.Properties.EyeHeight = baseProperties.EyeHeight;
+                    entity.Properties.CollisionBoxSize.Y = baseProperties.CollisionBoxSize.Y;
+
+                    if (IsLocalPlayer()) GlobalConstants.BaseJumpForce = 8.2f;
+
+                    entity.Stats.Remove("walkspeed", "crawlSpeed");
+                    entity.Stats.Remove("jumpHeightMul", "crawlJump");
+
+                    entity.StopAnimation("crawl-idle");
+                    entity.StopAnimation("crawl");
+
+                    IsClientCrawling = false;
+                }
+            }
+
+
+            if (IsCrawling)
+            {
+                entity.Stats.Set("walkspeed", "crawlSpeed", VerticalityModSystem.Config.modConfig.crawlSpeedReduction, true);
+                entity.Stats.Set("jumpHeightMul", "crawlJump", 0f, true);
+
+                if (((EntityPlayer)entity).Controls.TriesToMove)
+                {
+                    if (entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StopAnimation("crawl-idle");
+                    if (!entity.AnimManager.IsAnimationActive("crawl")) entity.StartAnimation("crawl");
+                }
+                else
+                {
+                    if (entity.AnimManager.IsAnimationActive("crawl")) entity.StopAnimation("crawl");
+                    if (!entity.AnimManager.IsAnimationActive("crawl-idle")) entity.StartAnimation("crawl-idle");
+                }
+            }
+        }
+
+
+        private bool IsLocalPlayer()
+        {
+            if (entity.Api.Side == EnumAppSide.Client)
+                if (entity == capi.World.Player.Entity)
+                    return true;
+            return false;
         }
 
         private bool CrawlInputPressed()

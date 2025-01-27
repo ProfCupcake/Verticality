@@ -1,2 +1,2 @@
-- Fix for crawl animations in multiplayer
-- Also implements saving/loading of crawl state
+- removed game version dependency (I forgot to update it the last few updates anyway)
+- yet another attempt at fixing these crawl multiplayer issues
