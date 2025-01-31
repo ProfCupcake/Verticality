@@ -17,7 +17,7 @@ namespace Verticality.Moves.Crawl
 
         bool DidKeyPress;
         private bool sneakPressed;
-        
+
         public bool IsCrawling
         {
             get
@@ -64,26 +64,46 @@ namespace Verticality.Moves.Crawl
 
             if (IsLocalPlayer())
             {
-                if (CrawlInputPressed())
+                if (VerticalityModSystem.ClientConfig.holdCrawl)
                 {
-                    if (!DidKeyPress)
+                    if (CrawlInputPressed())
+                    {
+                        if (!IsCrawling)
+                        {
+                            TryCrawl();
+                        };
+                    }
+                    else
                     {
                         if (IsCrawling)
                         {
-                            //capi.ShowChatMessage("trying to stand");
                             TryStand();
                         }
-                        else
-                        {
-                            //capi.ShowChatMessage("trying to crawl");
-                            TryCrawl();
-                        }
-                        DidKeyPress = true;
                     }
                 }
                 else
                 {
-                    DidKeyPress = false;
+                    if (CrawlInputPressed())
+                    {
+                        if (!DidKeyPress)
+                        {
+                            if (IsCrawling)
+                            {
+                                //capi.ShowChatMessage("trying to stand");
+                                TryStand();
+                            }
+                            else
+                            {
+                                //capi.ShowChatMessage("trying to crawl");
+                                TryCrawl();
+                            }
+                            DidKeyPress = true;
+                        }
+                    }
+                    else
+                    {
+                        DidKeyPress = false;
+                    }
                 }
             }
 
@@ -153,14 +173,14 @@ namespace Verticality.Moves.Crawl
             if (VerticalityModSystem.ClientConfig.combinationCrawlKeys)
                 if (capi.Input.IsHotKeyPressed("climb") && capi.Input.IsHotKeyPressed("sneak"))
                     return true;
-            
+
             if (VerticalityModSystem.ClientConfig.dedicatedCrawlKey)
                 if (capi.Input.IsHotKeyPressed("crawl"))
                     return true;
 
             if (VerticalityModSystem.ClientConfig.standOnJump)
                 if (IsCrawling)
-                    if (capi.Input.IsHotKeyPressed("jump"))
+                    if (capi.Input.IsHotKeyPressed("jump") && !VerticalityModSystem.ClientConfig.holdCrawl)
                         return true;
 
             if (VerticalityModSystem.ClientConfig.doubleTapSneakToCrawl)
@@ -175,17 +195,24 @@ namespace Verticality.Moves.Crawl
                             if (capi.ElapsedMilliseconds < doubleTapTime)
                             {
                                 return true;
-                            } else
+                            }
+                            else
                             {
                                 doubleTapTime = capi.ElapsedMilliseconds + VerticalityModSystem.ClientConfig.doubleTapSpeed;
                             }
                         }
-                    } else
+                    }
+                    else
                     {
                         sneakPressed = false;
                     }
                 }
-            
+                else if (VerticalityModSystem.ClientConfig.holdCrawl)
+                {
+                    if (capi.Input.IsHotKeyPressed("sneak"))
+                        return true;
+                }
+
             return false;
         }
 

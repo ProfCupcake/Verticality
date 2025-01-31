@@ -23,5 +23,6 @@ namespace Verticality
         public bool standOnJump = true;
         public bool doubleTapSneakToCrawl = false;
         public int doubleTapSpeed = 500;
+        public bool holdCrawl = false;
     }
 }

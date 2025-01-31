@@ -5,3 +5,4 @@
 
 - Added option for player to stop crawling when pressing jump (enabled by default)
 - Added option for player to start crawling by double-tapping sneak (disabled by default)
+- Added hold-crawl option (disabled by default)
