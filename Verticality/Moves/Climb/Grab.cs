@@ -21,7 +21,7 @@ namespace Verticality.Moves.Climb
         public static Grab TryGrab(EntityPlayer entity, float? minHeight, float? maxHeight, float? grabDistance)
         {
             minHeight ??= EntityBehaviorClimb.minHeight;
-            maxHeight ??= (float?)(EntityBehaviorClimb.maxHeight + entity.Pos.Y + entity.LocalEyePos.Y); // TODO: fix how alarmingly inconsistent this is
+            maxHeight ??= (float?)(EntityBehaviorClimb.maxHeight + entity.Pos.Y + entity.LocalEyePos.Y); // TODO: fix how alarmingly inconsistent this is?
             grabDistance ??= EntityBehaviorClimb.grabDistance;
 
             BlockSelection grabLoc = GetGrabLocationByRaycast(entity, (float)minHeight, (float)maxHeight, (float)grabDistance);
@@ -110,6 +110,49 @@ namespace Verticality.Moves.Climb
             return true;
         }
 
+        private static bool OverhangCheck(ref BlockSelection bs, EntityPlayer player, float maxHeight, float grabDistance, AABBIntersectionTest aabb)
+        {
+            Ray ray = Ray.FromPositions(
+                bs.FullPosition.SubCopy(0, 1 / 128f, 0),
+                bs.FullPosition.AddCopy(bs.Face.Normald * (1 / 32f)).Sub(0, 1 / 128f, 0)
+                );
+
+            aabb.LoadRayAndPos(ray);
+            BlockSelection hitBS = aabb.GetSelectedBlock((float)ray.Length, null, true);
+            if (hitBS == null) return true;
+
+            Cuboidf hitCollBox = hitBS.Block.GetCollisionBoxes(player.World.BlockAccessor, hitBS.Position)[hitBS.SelectionBoxIndex];
+            switch (bs.Face.Index)
+            {
+                case (BlockFacing.indexNORTH): // -Z
+                    ray.origin.Set(ray.origin.X, player.Pos.Y + player.LocalEyePos.Y + maxHeight, hitBS.Position.ToVec3d().Z + hitCollBox.MinZ);
+                    break;
+                case (BlockFacing.indexSOUTH): // +Z
+                    ray.origin.Set(ray.origin.X, player.Pos.Y + player.LocalEyePos.Y + maxHeight, hitBS.Position.ToVec3d().Z + hitCollBox.MaxZ);
+                    break;
+                case (BlockFacing.indexEAST): // +X
+                    ray.origin.Set(hitBS.Position.ToVec3d().X + hitCollBox.MaxX, player.Pos.Y + player.LocalEyePos.Y + maxHeight, ray.origin.Z);
+                    break;
+                case (BlockFacing.indexWEST): // -X
+                    ray.origin.Set(hitBS.Position.ToVec3d().X + hitCollBox.MinX, player.Pos.Y + player.LocalEyePos.Y + maxHeight, ray.origin.Z);
+                    break;
+                default: return true; // something has gone catastrophically wrong if this is ever reached
+            }
+
+            if (player.Pos.HorDistanceTo(ray.origin) > grabDistance) return false;
+
+            ray.dir.Set(0, hitBS.FullPosition.Y - ray.origin.Y, 0);
+            aabb.LoadRayAndPos(ray);
+            hitBS = aabb.GetSelectedBlock((float)ray.Length, null, true);
+            if (hitBS == null) return false;
+
+            if (!GapCheck(hitBS.FullPosition, aabb)) return false;
+
+            hitBS.Face = bs.Face;
+            bs = hitBS;
+            return true;
+        }
+
         public static SimpleParticleProperties debugParticles = new()
         {
             MinSize = 0.2f,
@@ -174,8 +217,8 @@ namespace Verticality.Moves.Climb
                     if (GapCheck(bs.FullPosition, aabb))
                     {
                         bs.Face = face;
-                        //((ICoreClientAPI)player.Api).ShowChatMessage("Grab! Face: " + face.ToString());
-                        return bs;
+                        if (OverhangCheck(ref bs, player, maxHeight, grabDistance, aabb))
+                            return bs;
                     }
 
                     ray = Ray.FromPositions(
