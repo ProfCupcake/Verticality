@@ -1,4 +1,4 @@
-- Changed how I do versioning; please don't be alarmed by the sudden jump by 3 minor versions
+- Changed how I do versioning; please don't be alarmed by the sudden jump of 3 minor versions
 
 - Patched up some cases where you could grab through another block
 - Now possible to grab overhangs (currently somewhat limited, needs more work)
@@ -6,3 +6,5 @@
 - Added option for player to stop crawling when pressing jump (enabled by default)
 - Added option for player to start crawling by double-tapping sneak (disabled by default)
 - Added hold-crawl option (disabled by default)
+
+- Added climb-jump: jump while climbing to jump away from the surface you've grabbed

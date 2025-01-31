@@ -9,8 +9,12 @@ namespace Verticality
         public float climbMinHeight = 0.5f;
         public float climbGrabDistance = 0.5f;
         public float climbSpeed = 1.5f;
+        public float climbJumpHForce = 5f;
+        public float climbJumpVForce = 6f;
+
         public float chargedJumpChargeTime = 0.5f;
         public float chargedJumpAddForce = 1.9f;
+
         public float crawlSpeedReduction = -0.8f;
     }
 
