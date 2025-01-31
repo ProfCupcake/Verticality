@@ -33,6 +33,24 @@ namespace Verticality.Moves.Climb
             }
         }
 
+        public static float climbJumpHForce
+        {
+            get
+            {
+                return VerticalityModSystem.Config.modConfig.climbJumpHForce;
+            }
+        }
+        public static float climbJumpVForce
+        {
+            get
+            {
+                return VerticalityModSystem.Config.modConfig.climbJumpVForce;
+            }
+        }
+        public int climbJumpCooldown = 1000;
+
+        public long climbJumpTime;
+
         public Grab grab;
 
         public bool ClimbKeyDown
@@ -62,7 +80,8 @@ namespace Verticality.Moves.Climb
             {
                 if (grab == null)
                 {
-                    grab = Grab.TryGrab(player, null, null, (float?)(grabDistance * 1.5));
+                    if (((ICoreClientAPI)entity.Api).ElapsedMilliseconds > climbJumpTime)
+                        grab = Grab.TryGrab(player, null, null, (float?)(grabDistance * 1.5));
                 }
                 else
                 {
@@ -75,6 +94,16 @@ namespace Verticality.Moves.Climb
                             Grab.debugParticles.Color = ColorUtil.WhiteArgb;
                             player.World.SpawnParticles(Grab.debugParticles);
                         }
+
+                        if (((ICoreClientAPI)entity.Api).Input.IsHotKeyPressed("jump"))
+                        {
+                            entity.Pos.Motion
+                                .Add(grab.grabPos.Face.Normald * climbJumpHForce / 60f)
+                                .Add(0, climbJumpVForce / 60f, 0);
+
+                            grab = null;
+                            climbJumpTime = ((ICoreClientAPI)entity.Api).ElapsedMilliseconds + climbJumpCooldown;
+                        }
                     }
                     else
                     {
@@ -83,10 +112,14 @@ namespace Verticality.Moves.Climb
                     }
                 }
             }
-            else if (grab != null)
+            else
             {
-                //player.Properties.CanClimbAnywhere = false;
-                grab = null;
+                climbJumpTime = 0;
+                if (grab != null)
+                {
+                    //player.Properties.CanClimbAnywhere = false;
+                    grab = null;
+                }
             }
         }
     }
