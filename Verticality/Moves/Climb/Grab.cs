@@ -75,18 +75,18 @@ namespace Verticality.Moves.Climb
 
             //if (player.Pos.HorDistanceTo(grabPos.FullPosition) > grabDistance) return false;
 
-            if (!GapCheck(grabPos.FullPosition, player.World.InteresectionTester)) return false;
+            if (!GapCheck(grabPos.FullPosition, grabPos.Face, player.World.InteresectionTester)) return false;
 
             return true;
         }
 
-        public static bool GapCheck(Vec3d pos, AABBIntersectionTest aabb)
+        public static bool GapCheck(Vec3d pos, BlockFacing face, AABBIntersectionTest aabb)
         {
             BlockSelection _ = null;
-            return GapCheck(pos, aabb, ref _);
+            return GapCheck(pos, face, aabb, ref _);
         }
 
-        public static bool GapCheck(Vec3d pos, AABBIntersectionTest aabb, ref BlockSelection outBS)
+        public static bool GapCheck(Vec3d pos, BlockFacing face, AABBIntersectionTest aabb, ref BlockSelection outBS)
         {
             Ray ray = Ray.FromPositions(
                 pos.AddCopy(0, 1 / 64f, 0),
@@ -102,6 +102,14 @@ namespace Verticality.Moves.Climb
             ray = Ray.FromPositions(
                 pos.Clone(),
                 pos.AddCopy(0, 1 / 64f, 0)
+                );
+            aabb.LoadRayAndPos(ray);
+            bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
+            if (bs != null) return false;
+
+            ray = Ray.FromPositions(
+                pos.AddCopy(0, 1 / 64f, 0),
+                pos.AddCopy(0, 1 / 64f, 0).Add(face.Normalf * 1 / 64f)
                 );
             aabb.LoadRayAndPos(ray);
             bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
@@ -146,7 +154,7 @@ namespace Verticality.Moves.Climb
             hitBS = aabb.GetSelectedBlock((float)ray.Length, null, true);
             if (hitBS == null) return false;
 
-            if (!GapCheck(hitBS.FullPosition, aabb)) return false;
+            if (!GapCheck(hitBS.FullPosition, hitBS.Face, aabb)) return false;
 
             hitBS.Face = bs.Face;
             bs = hitBS;
@@ -214,7 +222,7 @@ namespace Verticality.Moves.Climb
                 bs = aabb.GetSelectedBlock((float)ray.Length, null, true);
                 while (bs != null && ray.Length > 1/128f)
                 {
-                    if (GapCheck(bs.FullPosition, aabb))
+                    if (GapCheck(bs.FullPosition, face, aabb))
                     {
                         bs.Face = face;
                         if (OverhangCheck(ref bs, player, maxHeight, grabDistance, aabb))
@@ -237,7 +245,7 @@ namespace Verticality.Moves.Climb
         {
             Vec3d newPos = grabPos.FullPosition.AddCopy(grabPos.Face.GetHorizontalRotated(90).Normald.Clone().Scale(slide));
             BlockSelection bs = null;
-            if (GapCheck(newPos, player.World.InteresectionTester, ref bs))
+            if (GapCheck(newPos, grabPos.Face, player.World.InteresectionTester, ref bs))
             {
                 bs.Face = grabPos.Face;
                 grabPos = bs;
