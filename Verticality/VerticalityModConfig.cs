@@ -20,6 +20,8 @@ namespace Verticality
         
         public bool dedicatedCrawlKey = false;
         public bool combinationCrawlKeys = true;
-
+        public bool standOnJump = true;
+        public bool doubleTapSneakToCrawl = false;
+        public int doubleTapSpeed = 500;
     }
 }
