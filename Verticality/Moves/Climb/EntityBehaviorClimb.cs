@@ -51,6 +51,8 @@ namespace Verticality.Moves.Climb
 
         public long climbJumpTime;
 
+        public bool canClimbJump = true;
+
         public Grab grab;
 
         public bool ClimbKeyDown
@@ -81,7 +83,13 @@ namespace Verticality.Moves.Climb
                 if (grab == null)
                 {
                     if (((ICoreClientAPI)entity.Api).ElapsedMilliseconds > climbJumpTime)
+                    {
                         grab = Grab.TryGrab(player, null, null, (float?)(grabDistance * 1.5));
+                        if (((ICoreClientAPI)entity.Api).Input.IsHotKeyPressed("jump"))
+                        {
+                            canClimbJump = false;
+                        }
+                    }
                 }
                 else
                 {
@@ -97,12 +105,18 @@ namespace Verticality.Moves.Climb
 
                         if (((ICoreClientAPI)entity.Api).Input.IsHotKeyPressed("jump"))
                         {
-                            entity.Pos.Motion
-                                .Add(grab.grabPos.Face.Normald * climbJumpHForce / 60f)
-                                .Add(0, climbJumpVForce / 60f, 0);
+                            if (canClimbJump)
+                            {
+                                entity.Pos.Motion
+                                    .Add(grab.grabPos.Face.Normald * climbJumpHForce / 60f)
+                                    .Add(0, climbJumpVForce / 60f, 0);
 
-                            grab = null;
-                            climbJumpTime = ((ICoreClientAPI)entity.Api).ElapsedMilliseconds + climbJumpCooldown;
+                                grab = null;
+                                climbJumpTime = ((ICoreClientAPI)entity.Api).ElapsedMilliseconds + climbJumpCooldown;
+                            }
+                        } else
+                        {
+                            canClimbJump = true;
                         }
                     }
                     else
